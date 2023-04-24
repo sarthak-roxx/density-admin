@@ -76,7 +76,8 @@ export default function Navbar() {
                     mr: 1,
                   },
                   "&:before": {
-                    content: "",
+                    // eslint-disable-next-line quotes
+                    content: '""',
                     display: "block",
                     position: "absolute",
                     top: 0,
