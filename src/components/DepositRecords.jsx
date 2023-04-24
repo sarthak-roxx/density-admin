@@ -328,11 +328,11 @@ export default function DepositRecords() {
 
   useEffect(() => {
     // dispatch(fetchUsers());
-    // getAllAdmins();
+    getAllAdmins();
     // addRole();
     // getAllPermissions();
     // makePermission();
-    assignRole();
+    // assignRole();
   }, []);
   return (
     <>

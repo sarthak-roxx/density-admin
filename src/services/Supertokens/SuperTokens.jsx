@@ -7,7 +7,7 @@ export default function SuperTokensMain() {
     appInfo: {
       appName: "density-admin",
       apiDomain: "https://api-dev-admin.density.exchange",
-      websiteDomain: "https://admin-density.netlify.app",
+      websiteDomain: import.meta.env.VITE_HOST,
       apiBasePath: "/admin/auth",
       websiteBasePath: "/admin/auth",
     },
