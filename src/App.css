@@ -8,3 +8,41 @@
   font-size: 12px;
   font-weight: bold;
 }
+
+/* reward screen styles */
+
+@media only screen and (max-width: 400px) {
+  .reward_user_card {
+    flex-direction: column;
+  }
+
+  .userInfoCard {
+    width: 100%;
+  }
+
+  .enterEmailSection {
+    width: 100%;
+  }
+
+  .rewardButton {
+    width: 100%;
+  }
+}
+
+@media only screen and (min-width: 600px) {
+  .reward_user_card {
+    flex-direction: row;
+  }
+
+  .userInfoCard {
+    width: 50%;
+  }
+
+  .enterEmailSection {
+    width: 50%;
+  }
+
+  .rewardButton {
+    width: 56%;
+  }
+}

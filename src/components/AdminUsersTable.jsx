@@ -12,17 +12,29 @@ import {
   FormControlLabel,
   Radio,
   Typography,
+  InputLabel,
+  Select,
+  MenuItem,
+  IconButton,
 } from "@mui/material";
+import CloseIcon from "@mui/icons-material/Close";
 import { useDispatch, useSelector } from "react-redux";
 import { DataGrid } from "@mui/x-data-grid";
-import { makeGetReq } from "../utils/axiosHelper";
+import { makeGetReq, makePatchReq, makePostReq } from "../utils/axiosHelper";
 import { addAllAdmins } from "../redux/allAdmins/allAdmins.slice";
+import ConfirmationModal from "./ConfirmationModal";
+import InfoModal from "./InfoModal";
 
 const RoleTile = styled(Box)(({ theme }) => ({
   textAlign: "center",
   border: "1px solid green",
   backgroundColor: "lightgreen",
   borderRadius: "4px",
+}));
+
+const RevokeButtonRoleTile = styled(Box)(({ theme }) => ({
+  textAlign: "center",
+  backgroundColor: "lightgreen",
 }));
 
 const EditButton = styled(Button)(({ theme }) => ({
@@ -40,6 +52,7 @@ const DeleteButton = styled(Button)(({ theme }) => ({
 const Roles = styled(Box)(({ theme }) => ({
   display: "flex",
   gap: "5px",
+  flexWrap: "wrap",
 }));
 
 const addAdminModalStyles = {
@@ -54,15 +67,61 @@ const addAdminModalStyles = {
   boxShadow: 24,
   p: 4,
 };
+const confirmModalStyles = {
+  position: "absolute",
+  top: "50%",
+  left: "50%",
+  transform: "translate(-50%, -50%)",
+  width: 300,
+  bgcolor: "background.paper",
+  border: "2px solid #000",
+  borderRadius: "5px",
+  boxShadow: 24,
+  p: 4,
+};
+
+const RevokeRoleButton = styled(Box)(({ theme }) => ({
+  textAlign: "center",
+  border: "1px solid green",
+  backgroundColor: "lightgreen",
+  borderRadius: "4px",
+}));
 
 export default function AdminUsersTable() {
   const dispatch = useDispatch();
   const admins = useSelector((state) => state.admins.admins);
+  const [selectedRoleForRevoke, setSelectedRoleForRevoke] = useState([]);
+  const [selectedAdminId, setSelectedAdminId] = useState("");
+  const [createPermission, setCreatePermission] = useState("");
+  const [permissionsToRole, setPermissionsToRole] = useState([]);
+  const [rolesToAdmin, setRolesToAdmin] = useState([]);
+  const [createdPermissions, setCreatedPermissions] = useState([]);
+  const [createdRoles, setCreatedRoles] = useState([]);
+  const [adminrole, setAdminRole] = useState("");
+  const [infoMessage, setInfoMessage] = useState("");
+  const [selectedAdmin, setSelectedAdmin] = useState({});
   const [adminName, setAdminName] = useState("");
   const [adminEmail, setAdminEmail] = useState("");
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
+  const [addRoleModal, setAddRoleModal] = useState(false);
   const [addAdminModal, setAddAdminModal] = useState(false);
+  const [addPermissionModal, setAddPermissionModal] = useState(false);
+  const [confirmModal, setConfirmModal] = useState(false);
+  const [assignRoleModal, setAssignRoleModal] = useState(false);
+  const [infoModal, setInfoModal] = useState(false);
+  const [editRoleModal, setEditRoleModal] = useState(false);
   const toggleAddAdminModal = () => setAddAdminModal(!addAdminModal);
+  const toggleConfirmModal = () => setConfirmModal(!confirmModal);
+  const toggleAddPermissionModal = () =>
+    setAddPermissionModal(!addPermissionModal);
+  const toggleAddRoleModal = () => setAddRoleModal(!addRoleModal);
+  const toggleInfoModal = () => setInfoModal(!infoModal);
+  const toggleAssignRoleModal = () => setAssignRoleModal(!assignRoleModal);
+  const toggleEditRoleModal = () => setEditRoleModal(!editRoleModal);
+
+  console.log(selectedAdmin);
+  console.log(selectedRoleForRevoke);
+
   const adminColumns = [
     {
       field: "name",
@@ -81,7 +140,7 @@ export default function AdminUsersTable() {
     },
     {
       field: "role",
-      headerName: "Role",
+      headerName: "Roles",
       width: 200,
       renderCell: (params) => {
         return (
@@ -95,11 +154,100 @@ export default function AdminUsersTable() {
         );
       },
     },
+    {
+      field: "addRole",
+      headerName: "Assign Role",
+      width: 200,
+      renderCell: (params) => {
+        return (
+          <EditButton
+            onClick={() => {
+              toggleAssignRoleModal();
+              setSelectedAdminId(params.row.id);
+            }}
+          >
+            Assign Role
+          </EditButton>
+        );
+      },
+    },
+    {
+      field: "deleteAdmin",
+      headerName: "Edit",
+      width: 200,
+      renderCell: (params) => {
+        return (
+          <>
+            <EditButton
+              onClick={() => {
+                setSelectedAdmin(params.row);
+                toggleEditRoleModal();
+              }}
+            >
+              edit
+            </EditButton>
+          </>
+        );
+      },
+    },
   ];
 
+  const createAnAdmin = async (adminName, adminEmail, isSuperAdmin) => {
+    const admin = await makePostReq("v1/admin", {
+      name: adminName,
+      email: adminEmail,
+      willSuperAdmin: Boolean(isSuperAdmin),
+    });
+  };
+
   const getAllAdmins = async () => {
-    const admins = await makeGetReq("admin");
+    const admins = await makeGetReq("v1/admins");
     dispatch(addAllAdmins(admins));
+  };
+
+  const getRolesPermissions = async (roleId) => {
+    const data = await makeGetReq(`v1/role/${roleId}`);
+    return data;
+  };
+
+  const getPermissions = async () => {
+    const data = await makeGetReq("v1/permissions");
+    setCreatedPermissions(data);
+  };
+
+  const getRoles = async () => {
+    const data = await makeGetReq("v1/roles");
+    setCreatedRoles(data);
+  };
+
+  const assignRole = async (adminId, roles) => {
+    const data = await makePatchReq("v1/role/assign", {
+      adminID: adminId,
+      roles,
+    });
+    console.log(data);
+  };
+
+  const makePermissionPostReq = async () => {
+    makePostReq("v1/permission", {
+      permission: createPermission,
+    })
+      .then((res) => {
+        setInfoMessage(`${res.data.Permission} permission created`);
+        getPermissions();
+        toggleInfoModal();
+      })
+      .catch((err) => {
+        setInfoMessage(err.response.data.ErrorMessage);
+        toggleInfoModal();
+      });
+  };
+
+  const revokeRole = async (adminID, roles) => {
+    const data = await makePatchReq("v1/role/revoke", {
+      adminID,
+      roles,
+    });
   };
 
   const adminRows = admins.map((admin) => ({
@@ -112,14 +260,39 @@ export default function AdminUsersTable() {
 
   useEffect(() => {
     getAllAdmins();
+    // getRolesPermissions();
+    getRoles();
+    getPermissions();
   }, []);
+
+  const addRole = async () => {
+    makePostReq("v1/role", {
+      permissions: permissionsToRole,
+      role: adminrole,
+    })
+      .then((res) => {
+        setInfoMessage(`${res.data.Role} role created`);
+        getRoles();
+        toggleInfoModal();
+      })
+      .catch((err) => {
+        setInfoMessage(err.response.data.ErrorMessage);
+        toggleInfoModal();
+      });
+  };
 
   return (
     <>
       <Box m={1}>
-        <Box display="flex" justifyContent="flex-end" mb={1}>
+        <Box display="flex" justifyContent="space-between" mb={1}>
           <Button onClick={toggleAddAdminModal} variant="contained">
             Create an admin
+          </Button>
+          <Button onClick={toggleAddPermissionModal} variant="contained">
+            Create a permission
+          </Button>
+          <Button variant="contained" onClick={toggleAddRoleModal}>
+            Create a role
           </Button>
         </Box>
         <Box height={650}>
@@ -188,6 +361,210 @@ export default function AdminUsersTable() {
                 />
               </RadioGroup>
             </FormControl>
+            <Box display="flex" justifyContent="flex-end">
+              <Button
+                variant="contained"
+                onClick={() => {
+                  createAnAdmin(adminName, adminEmail, isSuperAdmin)
+                    .then((res) => {
+                      toggleAddAdminModal();
+                      getAllAdmins();
+                    })
+                    .catch((err) => {
+                      setInfoMessage(err.response.data.ErrorMessage);
+                      toggleInfoModal();
+                    });
+                }}
+              >
+                Add
+              </Button>
+            </Box>
+          </Box>
+        </Box>
+      </Modal>
+
+      <ConfirmationModal
+        modal={confirmModal}
+        toggleModal={toggleConfirmModal}
+        callback={() => {}}
+      />
+
+      <InfoModal
+        modal={infoModal}
+        toggleModal={toggleInfoModal}
+        message={infoMessage}
+      />
+
+      <Modal onClose={toggleAddPermissionModal} open={addPermissionModal}>
+        <Box sx={addAdminModalStyles}>
+          <Box mb={1}>
+            <FormControl fullWidth>
+              <InputLabel>Permission</InputLabel>
+              <Select
+                value={createPermission}
+                label="Permission"
+                onChange={(e) => {
+                  setCreatePermission(e.target.value);
+                }}
+              >
+                <MenuItem value="SymbolUpdater">SymbolUpdater</MenuItem>
+                <MenuItem value="KycUpdater">KycUpdater</MenuItem>
+                <MenuItem value="FiatUpdater">FiatUpdater</MenuItem>
+                <MenuItem value="UserUpdater">UserUpdater</MenuItem>
+                <MenuItem value="KycViewer">KycViewer</MenuItem>
+                <MenuItem value="BankUpdater">BankUpdater</MenuItem>
+                <MenuItem value="BankViewer">BankViewer</MenuItem>
+                <MenuItem value="AccountUpdater">AccountUpdater</MenuItem>
+                <MenuItem value="AccountViewer">AccountViewer</MenuItem>
+                <MenuItem value="OrderViewer">OrderViewer</MenuItem>
+                <MenuItem value="UserActionUpdater">UserActionUpdater</MenuItem>
+                <MenuItem value="UserActionViewer">UserActionViewer</MenuItem>
+                <MenuItem value="AdminLogViewer">AdminLogViewer</MenuItem>
+                <MenuItem value="RewardUpdater">RewardUpdater</MenuItem>
+                <MenuItem value="AppVersionUpdater">AppVersionUpdater</MenuItem>
+              </Select>
+            </FormControl>
+          </Box>
+          <Box display="flex" justifyContent="flex-end">
+            <Button onClick={makePermissionPostReq} variant="contained">
+              Add permission
+            </Button>
+          </Box>
+        </Box>
+      </Modal>
+
+      <Modal open={addRoleModal} onClose={toggleAddRoleModal}>
+        <Box sx={addAdminModalStyles}>
+          <Box display="flex" gap="1rem">
+            <Box mb={1}>
+              <TextField
+                label="Role"
+                value={adminrole}
+                onChange={(e) => setAdminRole(e.target.value)}
+              />
+            </Box>
+            <Box width="50%">
+              <FormControl fullWidth>
+                <InputLabel>Permissions</InputLabel>
+                <Select
+                  multiple
+                  value={permissionsToRole}
+                  onChange={(e) => setPermissionsToRole(e.target.value)}
+                >
+                  {createdPermissions?.map((perm) => (
+                    <MenuItem key={perm.ID} value={perm.ID}>
+                      {perm.Permission}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Box>
+          </Box>
+          <Box display="flex" justifyContent="flex-end">
+            <Button
+              onClick={() => {
+                addRole();
+                toggleAddRoleModal();
+                setAdminRole("");
+                setPermissionsToRole([]);
+              }}
+              variant="contained"
+            >
+              Add Role
+            </Button>
+          </Box>
+        </Box>
+      </Modal>
+
+      <Modal open={assignRoleModal} onClose={toggleAssignRoleModal}>
+        <Box sx={addAdminModalStyles}>
+          <Box mb={1}>
+            <FormControl fullWidth>
+              <InputLabel>Roles</InputLabel>
+              <Select
+                multiple
+                value={rolesToAdmin}
+                onChange={(e) => setRolesToAdmin(e.target.value)}
+              >
+                {createdRoles?.map((role) => (
+                  <MenuItem key={role.ID} value={role.ID}>
+                    {role.Role}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Box>
+
+          <Box display="flex" justifyContent="flex-end">
+            <Button
+              onClick={async () => {
+                await assignRole(selectedAdminId, rolesToAdmin);
+                await getAllAdmins();
+                toggleAssignRoleModal();
+                setRolesToAdmin([]);
+              }}
+              variant="contained"
+            >
+              Assign
+            </Button>
+          </Box>
+        </Box>
+      </Modal>
+
+      <Modal
+        open={editRoleModal}
+        onClose={() => {
+          toggleEditRoleModal();
+          setSelectedRoleForRevoke([]);
+        }}
+      >
+        <Box sx={addAdminModalStyles}>
+          <Roles>
+            {selectedAdmin.role?.map((r, idx) => (
+              <RevokeRoleButton
+                sx={
+                  selectedRoleForRevoke.find((roleId) => roleId === r.ID)
+                    ? { border: "2px solid red", backgroundColor: "red" }
+                    : {}
+                }
+                key={idx}
+                display="flex"
+                alignItems="center"
+              >
+                <RevokeButtonRoleTile>{r.Role}</RevokeButtonRoleTile>
+                <IconButton
+                  size="small"
+                  sx={{
+                    backgroundColor: "lightgreen",
+                    borderRadius: "4px",
+                  }}
+                  onClick={() =>
+                    setSelectedRoleForRevoke((prevRoles) => {
+                      let role = prevRoles.find((roleId) => roleId === r.ID);
+                      if (!role) {
+                        return [...prevRoles, r.ID];
+                      } else {
+                        return prevRoles.filter((roleId) => roleId !== role);
+                      }
+                    })
+                  }
+                >
+                  <CloseIcon fontSize="small" />
+                </IconButton>
+              </RevokeRoleButton>
+            ))}
+          </Roles>
+          <Box mt={2} display="flex" justifyContent="flex-end">
+            <Button
+              onClick={async () => {
+                toggleEditRoleModal();
+                await revokeRole(selectedAdmin.id, selectedRoleForRevoke);
+                await getAllAdmins();
+              }}
+              variant="contained"
+            >
+              Revoke Roles
+            </Button>
           </Box>
         </Box>
       </Modal>

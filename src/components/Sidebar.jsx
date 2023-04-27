@@ -24,6 +24,10 @@ const sidabarItems = [
     listText: "Reward",
     listRoute: "/reward",
   },
+  {
+    listText: "Admins",
+    listRoute: "/admin",
+  },
 ];
 
 export default function Sidebar() {

@@ -35,7 +35,7 @@ const withdrawColumns = [
     field: "amount",
     headerName: "Requested amount",
     cellClassName: "kyc-row-style",
-    width: 150,
+    width: 160,
     headerClassName: "kyc-column-header",
   },
   {

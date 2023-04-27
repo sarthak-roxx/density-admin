@@ -104,9 +104,9 @@ export default function RewardScreen() {
     <>
       <Box m={2}>
         <Typography variant="h2">Reward</Typography>
-        <Box display="flex">
-          <Box width="50%">
-            <Box mt={2}>
+        <Box display="flex" className="reward_user_card">
+          <Box className="enterEmailSection">
+            <Box mt={2} display="flex" gap="0.5rem">
               <TextField
                 label="Enter Email"
                 value={email}
@@ -120,7 +120,7 @@ export default function RewardScreen() {
                 <Typography variant="h4">Go</Typography>
               </Button>
             </Box>
-            <Box mt={3} width="56%">
+            <Box mt={3} className="rewardButton">
               {go && (
                 <Button
                   onClick={toggleRewardFormModal}
@@ -133,7 +133,7 @@ export default function RewardScreen() {
             </Box>
           </Box>
 
-          <Box width="50%" mt={2}>
+          <Box mt={2} className="userInfoCard">
             {go && (
               <Card>
                 <CardContent>

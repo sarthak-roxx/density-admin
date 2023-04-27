@@ -14,15 +14,13 @@ export const makeGetReq = async (apiRoute) => {
 };
 
 export const makePostReq = async (apiRoute, payload) => {
-  const { data } = await axiosInstance.post(apiRoute, payload);
-  return data;
+  const res = await axiosInstance.post(apiRoute, payload);
+  return res;
 };
 
 export const makePatchReq = async (apiRoute, payload) => {
   const { data } = await axiosInstance.patch(apiRoute, payload);
   return data;
 };
-
-
 
 export default axiosInstance;

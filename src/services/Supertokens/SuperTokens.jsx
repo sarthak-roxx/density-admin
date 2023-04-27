@@ -7,7 +7,7 @@ export default function SuperTokensMain() {
     appInfo: {
       appName: "density-admin",
       apiDomain: "https://api-dev-admin.density.exchange",
-      websiteDomain: import.meta.env.VITE_HOST,
+      websiteDomain: "https://localhost:3000",
       apiBasePath: "/admin/auth",
       websiteBasePath: "/admin/auth",
     },

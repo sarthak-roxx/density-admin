@@ -286,6 +286,11 @@ export default function DepositRecords() {
     console.log(admins);
   };
 
+  const getAllUsers = async () => {
+    const users = await makeGetReq("v1/users/all-users");
+    console.log(users);
+  };
+
   // const makeAdmin = async () => {
   //   const data = await makePostReq("admin", {
   //     name: "Jon Snow",
@@ -296,10 +301,10 @@ export default function DepositRecords() {
   // };
 
   const addRole = async () => {
-    const data = await makePostReq("role", {
+    const data = await makePostReq("v1/role", {
       permissions: [
-        "a25a1697-7540-42ab-90af-1691c2d4cb9f",
-        "af17e2cb-0ae4-4614-b836-b5b28d5f0c3c",
+        "91467ddc-f8ba-4a3f-a6ec-c3609255a482",
+        "b4b76a7c-5ab4-4e8f-9038-674c92a8a538",
       ],
       role: "Support",
     });
@@ -312,27 +317,65 @@ export default function DepositRecords() {
   };
 
   const makePermission = async () => {
-    const permission = await makePostReq("permission", {
-      permission: "UserUpdater",
+    const permission = await makePostReq("v1/permission", {
+      permission: "AccountViewer",
     });
     console.log(permission);
   };
 
   const assignRole = async () => {
-    const data = await makePatchReq("role/assign", {
-      adminID: "8ecc2ed0-1493-4e1a-b5fe-9a5e6869285f",
-      roles: ["87691451-232f-4d58-b796-03a97ff0f50a"],
+    const data = await makePatchReq("v1/role/assign", {
+      adminID: "90146aec-e635-461e-8176-a69720788965",
+      roles: ["9e65c85e-780d-4102-a538-c520ba194057"],
     });
+    console.log(data);
+  };
+
+  const revokeRole = async () => {
+    const data = await makePatchReq("v1/role/revoke", {
+      adminID: "90146aec-e635-461e-8176-a69720788965",
+      roles: ["25280e13-f817-4a0a-9986-e00a54ef959b"],
+    });
+    getAllAdmins();
+  };
+
+  const getAdminPermissions = async () => {
+    const data = await makeGetReq(
+      "v1/admin/90146aec-e635-461e-8176-a69720788965"
+    );
+    console.log(data);
+  };
+
+  const getRolesPermissions = async () => {
+    const data = await makeGetReq(
+      "v1/role/9e65c85e-780d-4102-a538-c520ba194057"
+    );
+    console.log(data);
+  };
+
+  const getPermissions = async () => {
+    const data = await makeGetReq("v1/permissions");
+    console.log(data);
+  };
+
+  const getAllRoles = async () => {
+    const data = await makeGetReq("v1/roles");
     console.log(data);
   };
 
   useEffect(() => {
     // dispatch(fetchUsers());
     getAllAdmins();
+    // revokeRole();
     // addRole();
     // getAllPermissions();
     // makePermission();
     // assignRole();
+    // getAdminPermissions();
+    // getRolesPermissions();
+    // getPermissions();
+    // getAllRoles();
+    // getAllUsers();
   }, []);
   return (
     <>
