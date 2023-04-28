@@ -1,6 +1,5 @@
 /* eslint-disable no-unused-vars */
 import React, { useState } from "react";
-import useSWR from "swr";
 import {
   Box,
   Card,
@@ -22,6 +21,7 @@ import { makeGetReq } from "../utils/axiosHelper";
 import { MobileView } from "react-device-detect";
 import { DataGrid } from "@mui/x-data-grid";
 import pp from "../utils/imgs/PP.jpg";
+import { useParams } from "react-router-dom";
 
 const style = {
   position: "absolute",
@@ -54,6 +54,8 @@ const adminLogsColumns = [
 ];
 
 export default function UserKycData() {
+  const { userID } = useParams();
+  const [userKycData, setUserKycData] = useState({});
   const [confirmModalOpen, setConfirmModalOpen] = useState(false);
   const toggleConfirmModal = () => setConfirmModalOpen(!confirmModalOpen);
   const isMobile = useMediaQuery("(min-width:768px)");
@@ -84,6 +86,11 @@ export default function UserKycData() {
     imgTile.style.width = "8vw";
     imgTile.style.height = "20vh";
     imgTile.style.transition = "transform 1 ease";
+  };
+
+  const fetchUserKycDetails = async () => {
+    const { data } = await makeGetReq(`v1/usrs/${userID}`);
+    setUserKycData(data);
   };
 
   return (
