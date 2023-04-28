@@ -20,6 +20,8 @@ import {
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { makeGetReq } from "../utils/axiosHelper";
 import { MobileView } from "react-device-detect";
+import { DataGrid } from "@mui/x-data-grid";
+import pp from "../utils/imgs/PP.jpg";
 
 const style = {
   position: "absolute",
@@ -33,6 +35,24 @@ const style = {
   p: 4,
 };
 
+const adminLogsColumns = [
+  {
+    field: "timestamp",
+    headerName: "Timestamp",
+    width: 200,
+  },
+  {
+    field: "action",
+    headerName: "Action",
+    width: 200,
+  },
+  {
+    field: "admin",
+    headerName: "Admin",
+    width: 200,
+  },
+];
+
 export default function UserKycData() {
   const [confirmModalOpen, setConfirmModalOpen] = useState(false);
   const toggleConfirmModal = () => setConfirmModalOpen(!confirmModalOpen);
@@ -40,11 +60,15 @@ export default function UserKycData() {
   const [enlarge, setEnlarge] = useState(false);
   const toggleEnlarge = () => setEnlarge(!enlarge);
 
-  // const { data } = useSWR(
-  //   "adminV0.1/GetUserKYC?userID=c0cc6ac9-70c2-4099-95ad-087ea39d3e90",
-  //   makeGetReq
-  // );
-  // console.log(data);
+  const [isAadharSelfieOpen, setIsAadharSelfieOpen] = useState(false);
+  const handleAadharSelfieDialog = () =>
+    setIsAadharSelfieOpen(!isAadharSelfieOpen);
+
+  const [isPanSelfieOpen, setIsPanSelfieOpen] = useState(false);
+  const handlePanSelfieDialog = () => setIsPanSelfieOpen(!isPanSelfieOpen);
+
+  const [isSelfieOpen, setIsSelfieOpen] = useState(false);
+  const handleSelfieDialog = () => setIsSelfieOpen(!isSelfieOpen);
 
   const enlargeImg = () => {
     const imgTile = document.getElementById("img-tile");
@@ -131,211 +155,259 @@ export default function UserKycData() {
           width={isMobile ? "70%" : "100%"}
           display="flex"
           flexDirection={isMobile ? "row" : "column"}
-          gap={5}
-          position="relative"
+          justifyContent="space-around"
         >
-          <Card>
-            <CardContent>
-              <Box display="flex" justifyContent="center" marginBottom={5}>
-                <Typography variant="h3">Aadhar Details</Typography>
-              </Box>
-              <Box display="flex" gap={1} alignItems="center">
-                <Box>
-                  <Box display="flex" gap={1}>
-                    <Typography color="grey" variant="h4">
-                      Name:
-                    </Typography>
-                    <Typography variant="h4">Jon Snow</Typography>
-                  </Box>
-                  <Box display="flex" gap={1}>
-                    <Typography color="grey" variant="h4">
-                      Gender:
-                    </Typography>
-                    <Typography variant="h4">Male</Typography>
-                  </Box>
-                  <Box display="flex" gap={1}>
-                    <Typography color="grey" variant="h4">
-                      DOB:
-                    </Typography>
-                    <Typography variant="h4">14/10/1998</Typography>
-                  </Box>
-                  <Box display="flex" gap={1}>
-                    <Typography color="grey" variant="h4">
-                      Aadhar No.:
-                    </Typography>
-                    <Typography variant="h4">XXXXXXXXXXX83</Typography>
-                  </Box>
-                  <Box display="flex" gap={1}>
-                    <Typography color="grey" variant="h4">
-                      Address:
-                    </Typography>
-                    <Typography variant="h4"></Typography>
-                  </Box>
+          <Box width={isMobile ? "40%" : "100%"}>
+            <Card>
+              <CardContent>
+                <Box display="flex" justifyContent="center" mb={2}>
+                  <Typography variant="h3">Aadhar Details</Typography>
                 </Box>
-
-                <div
-                  id="img-tile"
-                  style={{
-                    border: "1px solid grey",
-                    backgroundColor: "grey",
-                    width: "8vw",
-                    height: "20vh",
-                    position: "absolute",
-                    top: 50,
-                    left: 240,
-                    zIndex: 1000,
-                  }}
-                  onClick={resizeImg}
-                ></div>
-              </Box>
-              <Box mt={1} display="flex" justifyContent="flex-end">
-                <Button variant="outlined">Download in XML format</Button>
-                <Button onClick={enlargeImg} variant="outlined">
-                  <Typography variant="h5">Click here to enlarge</Typography>
-                </Button>
-              </Box>
-              <Box display="flex" gap={22} marginTop={2}>
-                <Button color="error" variant="contained">
-                  Reset
-                </Button>
-                <Button
-                  onClick={toggleConfirmModal}
-                  color="success"
-                  variant="contained"
+                <Box
+                  display="flex"
+                  justifyContent="space-between"
+                  alignItems="center"
                 >
-                  Approve
-                </Button>
-              </Box>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent>
-              <Box display="flex" justifyContent="center" marginBottom={2}>
-                <Typography variant="h3">PAN Details</Typography>
-              </Box>
-              <Box display="flex" gap={1} alignItems="center">
-                <Box>
-                  <Box display="flex" gap={1}>
-                    <Typography color="grey" variant="h4">
-                      Name:
-                    </Typography>
-                    <Typography variant="h4">Jon Snow</Typography>
+                  <Box>
+                    <Box display="flex" gap={1}>
+                      <Typography color="grey" variant="h5">
+                        Name:
+                      </Typography>
+                      <Typography variant="h5">Jon Snow</Typography>
+                    </Box>
+                    <Box display="flex" gap={1}>
+                      <Typography color="grey" variant="h5">
+                        Gender:
+                      </Typography>
+                      <Typography variant="h5">Male</Typography>
+                    </Box>
+                    <Box display="flex" gap={1}>
+                      <Typography color="grey" variant="h5">
+                        DOB:
+                      </Typography>
+                      <Typography variant="h5">14/10/1998</Typography>
+                    </Box>
+                    <Box display="flex" gap={1} width={10}>
+                      <Typography color="grey" variant="h5">
+                        Aadhar No.:
+                      </Typography>
+                      <Typography variant="h5">XXXXXXXXXXX83</Typography>
+                    </Box>
+                    <Box display="flex" gap={1}>
+                      <Typography color="grey" variant="h5">
+                        Address:
+                      </Typography>
+                      <Typography variant="h5"></Typography>
+                    </Box>
                   </Box>
-                  <Box display="flex" gap={1}>
-                    <Typography color="grey" variant="h4">
-                      Pan No.:
-                    </Typography>
-                    <Typography variant="h4">XXXXXXXX87</Typography>
-                  </Box>
-                  <Box display="flex" gap={1}>
-                    <Typography color="grey" variant="h4">
-                      DOB:
-                    </Typography>
-                    <Typography variant="h4">14/10/1998</Typography>
-                  </Box>
+
+                  <img
+                    width="40%"
+                    className="small"
+                    src={pp}
+                    alt="aadhar selfie"
+                  />
+                  {isAadharSelfieOpen && (
+                    <dialog
+                      className="dialog"
+                      style={{ position: "absolute", zIndex: 1000 }}
+                      open
+                      onClick={handleAadharSelfieDialog}
+                    >
+                      <img
+                        className="image"
+                        src={pp}
+                        alt="aadhar dialog selfie"
+                        onClick={handleAadharSelfieDialog}
+                      />
+                    </dialog>
+                  )}
                 </Box>
-
-                <div
-                  id="img-tile"
-                  style={{
-                    border: "1px solid grey",
-                    backgroundColor: "grey",
-                    width: "8vw",
-                    height: "20vh",
-                    // position: "absolute",
-                    // top: 50,
-                    // left: 240,
-                    // zIndex: 1000,
-                  }}
-                  onClick={resizeImg}
-                ></div>
-              </Box>
-              <Box mt={1} display="flex" justifyContent="flex-end">
-                <Button onClick={enlargeImg} variant="outlined">
-                  <Typography variant="h5">Click here to enlarge</Typography>
-                </Button>
-              </Box>
-              <Box display="flex" gap={16} marginTop={2}>
-                <Button color="error" variant="contained">
-                  Reset
-                </Button>
-                <Button
-                  color="success"
-                  variant="contained"
-                  onClick={toggleConfirmModal}
-                >
-                  Approve
-                </Button>
-              </Box>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent>
-              <Box display="flex" justifyContent="center" marginBottom={2}>
-                <Typography variant="h3">Selfie details</Typography>
-              </Box>
-              <Box display="flex" gap={1} alignItems="center">
-                <Box display="flex" gap={1}>
-                  <Typography color="grey" variant="h4">
-                    Selfie Match:
-                  </Typography>
-                  <Typography variant="h4">98%</Typography>
+                <Box mt={1.5} display="flex" justifyContent="space-between">
+                  <Button variant="outlined" size="small">
+                    <Typography variant="h5">Download in XML format</Typography>
+                  </Button>
+                  <Button
+                    onClick={handleAadharSelfieDialog}
+                    variant="outlined"
+                    size="small"
+                  >
+                    <Typography variant="h5">Click here to enlarge</Typography>
+                  </Button>
                 </Box>
+                <Box marginTop={2}>
+                  <Button
+                    onClick={toggleConfirmModal}
+                    color="success"
+                    variant="contained"
+                    fullWidth
+                  >
+                    Approve
+                  </Button>
+                </Box>
+              </CardContent>
+            </Card>
+          </Box>
 
-                <div
-                  id="img-tile"
-                  style={{
-                    border: "1px solid grey",
-                    backgroundColor: "grey",
-                    width: "8vw",
-                    height: "20vh",
-                    // position: "absolute",
-                    // top: 50,
-                    // left: 240,
-                    // zIndex: 1000,
-                  }}
-                  onClick={resizeImg}
-                ></div>
-              </Box>
-              <Box mt={1} display="flex" justifyContent="flex-end">
-                <Button onClick={enlargeImg} variant="outlined">
-                  <Typography variant="h5">Click here to enlarge</Typography>
-                </Button>
-              </Box>
-              <Box display="flex" gap={14} marginTop={2}>
-                <Button color="error" variant="contained">
-                  Reset
-                </Button>
-                <Button
-                  color="success"
-                  variant="contained"
-                  onClick={toggleConfirmModal}
+          <Box width={isMobile ? "40%" : "100%"}>
+            <Card>
+              <CardContent>
+                <Box display="flex" justifyContent="center" marginBottom={2}>
+                  <Typography variant="h3">PAN Details</Typography>
+                </Box>
+                <Box
+                  display="flex"
+                  justifyContent="space-between"
+                  alignItems="center"
                 >
-                  Approve
-                </Button>
-              </Box>
-            </CardContent>
-          </Card>
+                  <Box>
+                    <Box display="flex" gap={1}>
+                      <Typography color="grey" variant="h5">
+                        Name:
+                      </Typography>
+                      <Typography variant="h5">Jon Snow</Typography>
+                    </Box>
+                    <Box display="flex" gap={1}>
+                      <Typography color="grey" variant="h5">
+                        Pan No.:
+                      </Typography>
+                      <Typography variant="h5">XXXXXXXX87</Typography>
+                    </Box>
+                    <Box display="flex" gap={1}>
+                      <Typography color="grey" variant="h5">
+                        DOB:
+                      </Typography>
+                      <Typography variant="h5">14/10/1998</Typography>
+                    </Box>
+                  </Box>
+
+                  <img
+                    width="40%"
+                    className="small"
+                    src={pp}
+                    alt="aadhar selfie"
+                  />
+                  {isPanSelfieOpen && (
+                    <dialog
+                      className="dialog"
+                      style={{ position: "absolute", zIndex: 1000 }}
+                      open
+                      onClick={handlePanSelfieDialog}
+                    >
+                      <img
+                        className="image"
+                        src={pp}
+                        alt="aadhar dialog selfie"
+                        onClick={handlePanSelfieDialog}
+                      />
+                    </dialog>
+                  )}
+                </Box>
+                <Box mt={1} display="flex" justifyContent="flex-end">
+                  <Button onClick={handlePanSelfieDialog} variant="outlined">
+                    <Typography variant="h5">Click here to enlarge</Typography>
+                  </Button>
+                </Box>
+                <Box marginTop={2}>
+                  <Button
+                    onClick={toggleConfirmModal}
+                    color="error"
+                    variant="contained"
+                    fullWidth
+                  >
+                    Reject
+                  </Button>
+                </Box>
+              </CardContent>
+            </Card>
+          </Box>
+
+          <Box width={isMobile ? "40%" : "100%"}>
+            <Card>
+              <CardContent>
+                <Box display="flex" justifyContent="center" marginBottom={2}>
+                  <Typography variant="h3">Selfie details</Typography>
+                </Box>
+                <Box
+                  display="flex"
+                  justifyContent="space-between"
+                  alignItems="center"
+                >
+                  <Box display="flex" gap={1}>
+                    <Typography color="grey" variant="h5">
+                      Selfie Match:
+                    </Typography>
+                    <Typography variant="h5">98%</Typography>
+                  </Box>
+
+                  <img
+                    width="40%"
+                    className="small"
+                    src={pp}
+                    alt="aadhar selfie"
+                  />
+                  {isSelfieOpen && (
+                    <dialog
+                      className="dialog"
+                      style={{ position: "absolute", zIndex: 1000 }}
+                      open
+                      onClick={handleSelfieDialog}
+                    >
+                      <img
+                        className="image"
+                        src={pp}
+                        alt="aadhar dialog selfie"
+                        onClick={handleSelfieDialog}
+                      />
+                    </dialog>
+                  )}
+                </Box>
+                <Box mt={1} display="flex" justifyContent="flex-end">
+                  <Button onClick={handleAadharSelfieDialog} variant="outlined">
+                    <Typography variant="h5">Click here to enlarge</Typography>
+                  </Button>
+                </Box>
+                <Box marginTop={2}>
+                  <Button
+                    onClick={toggleConfirmModal}
+                    color="error"
+                    variant="contained"
+                    fullWidth
+                  >
+                    Reject
+                  </Button>
+                </Box>
+              </CardContent>
+            </Card>
+          </Box>
         </Box>
 
         <Box width={isMobile ? "30%" : "100%"} border="1px solid grey">
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell>
-                  <Typography variant="h3">Timestamp</Typography>
-                </TableCell>
-                <TableCell>
-                  <Typography variant="h3">Action</Typography>
-                </TableCell>
-                <TableCell>
-                  <Typography variant="h3">Admin</Typography>
-                </TableCell>
-              </TableRow>
-            </TableHead>
-
-            {/* Add Admin log entries here */}
-          </Table>
+          <DataGrid
+            sx={{
+              ".MuiDataGrid-columnHeaderCheckbox": {
+                display: "none",
+              },
+              "& .MuiDataGrid-cellCheckbox": {
+                display: "none",
+              },
+              "&.MuiDataGrid-root .MuiDataGrid-cell:focus-within": {
+                outline: "none !important",
+              },
+            }}
+            rows={[]}
+            columns={adminLogsColumns}
+            initialState={{
+              pagination: {
+                paginationModel: {
+                  pageSize: 10,
+                },
+              },
+            }}
+            pageSizeOptions={[10]}
+            checkboxSelection
+            disableRowSelectionOnClick
+          />
         </Box>
       </Box>
 
