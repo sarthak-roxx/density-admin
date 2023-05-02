@@ -202,19 +202,29 @@ export default function UserKycData() {
                       <Typography color="grey" variant="h5">
                         DOB:
                       </Typography>
-                      <Typography variant="h5">{userKycData?.POAData?.DOB}</Typography>
+                      <Typography variant="h5">
+                        {userKycData?.POAData?.DOB}
+                      </Typography>
                     </Box>
                     <Box display="flex" gap={1} width={10}>
                       <Typography color="grey" variant="h5">
                         Aadhar No.:
                       </Typography>
-                      <Typography variant="h5">{userKycData?.POAData?.IDNumber}</Typography>
+                      <Typography variant="h5">
+                        {userKycData?.POAData?.IDNumber}
+                      </Typography>
                     </Box>
                     <Box display="flex" gap={1}>
                       <Typography color="grey" variant="h5">
                         Address:
                       </Typography>
-                      <Typography variant="h5"></Typography>
+                      <Typography variant="h5">
+                        {userKycData?.POAData?.address?.house +
+                          ", " +
+                          userKycData?.POAData?.address?.landmark +
+                          ", " +
+                          userKycData?.POAData?.address?.landmark}
+                      </Typography>
                     </Box>
                   </Box>
 
@@ -272,23 +282,23 @@ export default function UserKycData() {
                 <Box display="flex" justifyContent="center" marginBottom={2}>
                   <Typography variant="h3">PAN Details</Typography>
                 </Box>
-                <Box
-                  display="flex"
-                  justifyContent="center"
-                  alignItems="center"
-                >
+                <Box display="flex" justifyContent="center" alignItems="center">
                   <Box>
                     <Box display="flex" gap={1}>
                       <Typography color="grey" variant="h5">
                         Name:
                       </Typography>
-                      <Typography variant="h5">Jon Snow</Typography>
+                      <Typography variant="h5">
+                        {userKycData?.POIData?.nameOnCard}
+                      </Typography>
                     </Box>
                     <Box display="flex" gap={1}>
                       <Typography color="grey" variant="h5">
                         Pan No.:
                       </Typography>
-                      <Typography variant="h5">XXXXXXXX87</Typography>
+                      <Typography variant="h5">
+                        {userKycData?.POIData?.IDNumber}
+                      </Typography>
                     </Box>
                     <Box display="flex" gap={1}>
                       <Typography color="grey" variant="h5">
