@@ -53,32 +53,32 @@ export default function DepositRecords() {
     //   headerClassName: "kyc-column-header",
     //   width: 100,
     // },
-    // {
-    //   field: "time",
-    //   headerName: "Time",
-    //   headerClassName: "kyc-column-header",
-    //   width: 100,
-    // },
-    // {
-    //   field: "userName",
-    //   headerName: "Username",
-    //   headerClassName: "kyc-column-header",
-    //   width: 100,
-    // },
-    // {
-    //   field: "email",
-    //   headerName: "Email",
-    //   cellClassName: "kyc-row-style",
-    //   headerClassName: "kyc-column-header",
-    //   width: 200,
-    // },
-    // {
-    //   field: "bankAccNo",
-    //   cellClassName: "kyc-row-style",
-    //   headerName: "Bank Account No",
-    //   headerClassName: "kyc-column-header",
-    //   width: 150,
-    // },
+    {
+      field: "timestamp",
+      headerName: "Timestamp",
+      headerClassName: "kyc-column-header",
+      width: 200,
+    },
+    {
+      field: "userName",
+      headerName: "Username",
+      headerClassName: "kyc-column-header",
+      width: 200,
+    },
+    {
+      field: "email",
+      headerName: "Email",
+      cellClassName: "kyc-row-style",
+      headerClassName: "kyc-column-header",
+      width: 200,
+    },
+    {
+      field: "bankAccNo",
+      cellClassName: "kyc-row-style",
+      headerName: "Bank Account No",
+      headerClassName: "kyc-column-header",
+      width: 150,
+    },
     {
       field: "depositAmount",
       headerName: "Deposit Amount",
@@ -382,12 +382,16 @@ export default function DepositRecords() {
     console.log(data);
 
     const rows = data.map((traxn) => ({
-      id: traxn.userID,
+      id: traxn.id,
+      userName: traxn.userFirstName + " " + traxn.userLastName,
       depositAmount: traxn.amount,
       refNo: traxn.txnRefID,
       depositStatus: traxn.fiatTransactionStatus,
-      FiatTxnID: traxn.txnID,
-      RefID: traxn.txnRefID,
+      bankAccNo: traxn.userBankAccount,
+      email: traxn.userEmail,
+      timestamp: new Date(traxn.createdAt),
+      // FiatTxnID: traxn.txnID,
+      // RefID: traxn.txnRefID,
     }));
 
     setFiatTraxns(rows);
@@ -408,7 +412,7 @@ export default function DepositRecords() {
   };
 
   useEffect(() => {
-    // getListOfFiatTraxn();
+    getListOfFiatTraxn();
     // dispatch(fetchUsers());
     // getAllAdmins();
     // revokeRole();
@@ -420,7 +424,7 @@ export default function DepositRecords() {
     // getRolesPermissions();
     // getPermissions();
     // getAllRoles();
-    getuser();
+    // getuser();
     // getAllUsers();
   }, []);
   return (
