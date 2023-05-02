@@ -197,7 +197,7 @@ export default function KycUsers() {
           <>
             <ShowButton
               onClick={() => {
-                navigate("/kycData/xyx");
+                navigate(`/kycData/${params.id}`);
               }}
             >
               View
@@ -275,7 +275,6 @@ export default function KycUsers() {
       phone: user.mobileNumber || "---",
       bankVerifyStatus: user.pennyDropStatus,
     }));
-    console.log(rows);
     setUserRows(rows);
   };
 
