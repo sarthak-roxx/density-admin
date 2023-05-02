@@ -1,5 +1,5 @@
 /* eslint-disable no-unused-vars */
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Card,
@@ -89,9 +89,17 @@ export default function UserKycData() {
   };
 
   const fetchUserKycDetails = async () => {
-    const { data } = await makeGetReq(`v1/users/${userID}`);
+    const { data } = await makeGetReq(
+      `v1/users/${userID}/kyc?userID=${userID}`
+    );
     setUserKycData(data);
   };
+
+  useEffect(() => {
+    fetchUserKycDetails();
+  }, []);
+
+  console.log(userKycData);
 
   return (
     <>

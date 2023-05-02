@@ -383,7 +383,11 @@ export default function DepositRecords() {
 
     const rows = data.map((traxn) => ({
       id: traxn.id,
-      userName: traxn.userFirstName + " " + traxn.userLastName,
+      // userName: traxn.userFirstName + " " + traxn.userLastName,
+      userName:
+        traxn.userFirstName && traxn.userLastName
+          ? traxn.userFirstName + " " + traxn.userLastName
+          : "---",
       depositAmount: traxn.amount,
       refNo: traxn.txnRefID,
       depositStatus: traxn.fiatTransactionStatus,
