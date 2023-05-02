@@ -1,5 +1,5 @@
-/* eslint-disable no-unused-vars */
-import React, { useEffect, useState } from "react";
+/* eslint-disable  */
+import React, { useCallback, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { DataGrid } from "@mui/x-data-grid";
 import { styled } from "@mui/material/styles";
@@ -22,17 +22,11 @@ import {
   CardContent,
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import { editUser, resetFilter } from "../redux/allUsers/allUsers.slice";
+import { resetFilter } from "../redux/allUsers/allUsers.slice";
 import { useNavigate } from "react-router-dom";
-import Logout from "./Logout";
-import axios from "axios";
-import { logoutApp } from "../services/Supertokens/SuperTokensHelper";
-import axiosInstance, { makeGetReq } from "../utils/axiosHelper";
+
+import { makeGetReq } from "../utils/axiosHelper";
 import { MobileView, BrowserView } from "react-device-detect";
-import { DemoContainer } from "@mui/x-date-pickers/internals/demo";
-import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
-import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import FilterComponent from "./FilterComponent";
 import dayjs from "dayjs";
 import { useSessionContext } from "supertokens-auth-react/recipe/session";
@@ -141,6 +135,11 @@ export default function KycUsers() {
   const [filterByEmail, setFilterByEmail] = useState("");
   const [userRows, setUserRows] = useState([]);
   const [bankModal, setBankModal] = useState(false);
+  const [paginationModal, setPaginationModal] = useState({
+    page: 0,
+    pageSize: 5
+  });
+  const [totalRows, setTotalRows] = useState(0);
   const toggleBankModal = () => setBankModal(!bankModal);
   const usersColumns = [
     {
@@ -226,45 +225,17 @@ export default function KycUsers() {
       },
     },
   ];
-
+  const changePagination = (event) =>{
+    console.log(event);
+    setPaginationModal({ page: event.page , pageSize : event.pageSize});
+  }
   const handleAlignment = async (event, newAlignment) => {
     setFilterByKycStatus(newAlignment);
-
-    if (!newAlignment) {
-      const { data } = await makeGetReq("/v1/users/all-users?size=10&pageNo=1");
-      const rows = data.map((user) => ({
-        id: user.id,
-        createdOn: user.created,
-        email: user.email,
-        firstName: user.firstName || "---",
-        lastName: user.lastName || "---",
-        kycStatus: user.kycStatus,
-        phone: user.mobileNumber || "---",
-        bankVerifyStatus: user.pennyDropStatus,
-      }));
-      setUserRows(rows);
-    } else {
-      const { data } = await makeGetReq(
-        `v1/kyc/query-kyc?status=${newAlignment}`
-      );
-      const rows = data.map((user) => ({
-        id: user.id,
-        createdOn: user.created,
-        email: user.email,
-        firstName: user.firstName || "---",
-        lastName: user.lastName || "---",
-        kycStatus: user.kycStatus,
-        phone: user.mobileNumber || "---",
-        bankVerifyStatus: user.pennyDropStatus,
-      }));
-      setUserRows(rows);
-    }
-  };
-
-  const fetchAllUsers = async () => {
+    // setPaginationModal(paginationModal => ({ page: 1, pageSize : paginationModal.pageSize})) 
+  }
+  const fetchAllUsers = useCallback(async () => {
     // const data = await makeGetReq("/v1/kyc/query-kyc?status=FAILED");
-
-    const { data } = await makeGetReq("/v1/users/all-users?size=10&pageNo=1");
+    const { data, total } = await makeGetReq(`/v1/kyc/query-kyc?status=${filterByKycStatus}&pageSize=${paginationModal.pageSize}&pageNo=${paginationModal.page+1}`);
     const rows = data.map((user) => ({
       id: user.id,
       createdOn: user.created,
@@ -277,12 +248,14 @@ export default function KycUsers() {
     }));
     console.log(rows);
     setUserRows(rows);
-  };
+    setTotalRows(total)
+  }, [paginationModal.page, paginationModal.pageSize, filterByKycStatus])
 
   useEffect(() => {
     fetchAllUsers();
-  }, []);
+  }, [fetchAllUsers]);
 
+  
   return (
     <>
       <BrowserView>
@@ -349,14 +322,11 @@ export default function KycUsers() {
             }}
             rows={userRows}
             columns={usersColumns}
-            initialState={{
-              pagination: {
-                paginationModel: {
-                  pageSize: 10,
-                },
-              },
-            }}
-            pageSizeOptions={[10]}
+            paginationModel={paginationModal}
+            rowCount={totalRows}
+            pageSizeOptions={[5,10]}
+            paginationMode="server"
+            onPaginationModelChange={changePagination}
             checkboxSelection
             disableRowSelectionOnClick
           />
