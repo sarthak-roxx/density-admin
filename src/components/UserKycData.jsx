@@ -99,8 +99,6 @@ export default function UserKycData() {
     fetchUserKycDetails();
   }, []);
 
-  console.log(userKycData);
-
   return (
     <>
       <Box margin={1}>
@@ -188,25 +186,29 @@ export default function UserKycData() {
                       <Typography color="grey" variant="h5">
                         Name:
                       </Typography>
-                      <Typography variant="h5">Jon Snow</Typography>
+                      <Typography variant="h5">
+                        {userKycData?.POAData?.name}
+                      </Typography>
                     </Box>
                     <Box display="flex" gap={1}>
                       <Typography color="grey" variant="h5">
                         Gender:
                       </Typography>
-                      <Typography variant="h5">Male</Typography>
+                      <Typography variant="h5">
+                        {userKycData?.POAData?.gender}
+                      </Typography>
                     </Box>
                     <Box display="flex" gap={1}>
                       <Typography color="grey" variant="h5">
                         DOB:
                       </Typography>
-                      <Typography variant="h5">14/10/1998</Typography>
+                      <Typography variant="h5">{userKycData?.POAData?.DOB}</Typography>
                     </Box>
                     <Box display="flex" gap={1} width={10}>
                       <Typography color="grey" variant="h5">
                         Aadhar No.:
                       </Typography>
-                      <Typography variant="h5">XXXXXXXXXXX83</Typography>
+                      <Typography variant="h5">{userKycData?.POAData?.IDNumber}</Typography>
                     </Box>
                     <Box display="flex" gap={1}>
                       <Typography color="grey" variant="h5">
@@ -264,7 +266,7 @@ export default function UserKycData() {
             </Card>
           </Box>
 
-          <Box width={isMobile ? "40%" : "100%"}>
+          <Box width={isMobile ? "20%" : "100%"}>
             <Card>
               <CardContent>
                 <Box display="flex" justifyContent="center" marginBottom={2}>
@@ -272,7 +274,7 @@ export default function UserKycData() {
                 </Box>
                 <Box
                   display="flex"
-                  justifyContent="space-between"
+                  justifyContent="center"
                   alignItems="center"
                 >
                   <Box>

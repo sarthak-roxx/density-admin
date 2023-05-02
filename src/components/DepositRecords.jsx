@@ -46,6 +46,27 @@ export default function DepositRecords() {
   const toggleViewTransactionModal = () =>
     setTransactionHistoryModal(!transactionHistoryModal);
 
+  const depositLogs = [
+    {
+      field: "timestamp",
+      headerClassName: "kyc-column-header",
+      headerName: "Timestamp",
+      width: 200,
+    },
+    {
+      field: "action",
+      headerClassName: "kyc-column-header",
+      headerName: "Action",
+      width: 200,
+    },
+    {
+      field: "admin",
+      headerClassName: "kyc-column-header",
+      headerName: "Admin",
+      width: 200,
+    },
+  ];
+
   const columns = [
     // {
     //   field: "date",
@@ -288,88 +309,6 @@ export default function DepositRecords() {
   ];
   // const users = useSelector((state) => state.users.users);
 
-  const getAllAdmins = async () => {
-    const admins = await makeGetReq("v1/admins");
-    console.log(admins);
-  };
-
-  const getAllUsers = async () => {
-    const users = await makeGetReq("v1/users/all-users");
-    console.log(users);
-  };
-
-  // const makeAdmin = async () => {
-  //   const data = await makePostReq("admin", {
-  //     name: "Jon Snow",
-  //     email: "jon.snow@density.exchange",
-  //     willSuperAdmin: true,
-  //   });
-  //   console.log(data);
-  // };
-
-  const addRole = async () => {
-    const data = await makePostReq("v1/role", {
-      permissions: [
-        "91467ddc-f8ba-4a3f-a6ec-c3609255a482",
-        "b4b76a7c-5ab4-4e8f-9038-674c92a8a538",
-      ],
-      role: "Support",
-    });
-    console.log(data);
-  };
-
-  const getAllPermissions = async () => {
-    const permissions = await makeGetReq("permissions");
-    console.log(permissions);
-  };
-
-  const makePermission = async () => {
-    const permission = await makePostReq("v1/permission", {
-      permission: "AccountViewer",
-    });
-    console.log(permission);
-  };
-
-  const assignRole = async () => {
-    const data = await makePatchReq("v1/role/assign", {
-      adminID: "90146aec-e635-461e-8176-a69720788965",
-      roles: ["9e65c85e-780d-4102-a538-c520ba194057"],
-    });
-    console.log(data);
-  };
-
-  const revokeRole = async () => {
-    const data = await makePatchReq("v1/role/revoke", {
-      adminID: "90146aec-e635-461e-8176-a69720788965",
-      roles: ["25280e13-f817-4a0a-9986-e00a54ef959b"],
-    });
-    getAllAdmins();
-  };
-
-  const getAdminPermissions = async () => {
-    const data = await makeGetReq(
-      "v1/admin/90146aec-e635-461e-8176-a69720788965"
-    );
-    console.log(data);
-  };
-
-  const getRolesPermissions = async () => {
-    const data = await makeGetReq(
-      "v1/role/9e65c85e-780d-4102-a538-c520ba194057"
-    );
-    console.log(data);
-  };
-
-  const getPermissions = async () => {
-    const data = await makeGetReq("v1/permissions");
-    console.log(data);
-  };
-
-  const getAllRoles = async () => {
-    const data = await makeGetReq("v1/roles");
-    console.log(data);
-  };
-
   const getuser = async () => {
     const data = await makeGetReq(
       "/v1/users/faa77344-2620-44e3-bc5e-bf39a379def4/kyc"
@@ -461,6 +400,36 @@ export default function DepositRecords() {
           isRowSelectable={() => false}
         />
       </Box>
+      <Box display="flex" justifyContent="center">
+        <Box sx={{ height: 500, width: "50%", p: 1 }}>
+          <DataGrid
+            sx={{
+              ".MuiDataGrid-columnHeaderCheckbox": {
+                display: "none",
+              },
+              "& .MuiDataGrid-cellCheckbox": {
+                display: "none",
+              },
+              "&.MuiDataGrid-root .MuiDataGrid-cell:focus-within": {
+                outline: "none !important",
+              },
+            }}
+            rows={[]}
+            columns={depositLogs}
+            initialState={{
+              pagination: {
+                paginationModel: {
+                  pageSize: 10,
+                },
+              },
+            }}
+            pageSizeOptions={[10]}
+            checkboxSelection
+            disableRowSelectionOnClick
+            isRowSelectable={() => false}
+          />
+        </Box>
+      </Box>
 
       <Modal
         open={transactionHistoryModal}
@@ -476,8 +445,8 @@ export default function DepositRecords() {
                 display: "none",
               },
             }}
-            rows={transactionRows}
-            columns={transactionColumns}
+            rows={[]}
+            columns={depositLogs}
             initialState={{
               pagination: {
                 paginationModel: {
