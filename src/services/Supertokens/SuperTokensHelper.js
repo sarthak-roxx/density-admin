@@ -21,6 +21,11 @@ export const checkLoadingStatus = () => {
   return session.loading;
 };
 
+export const fetchAdminId = () => {
+  const { userId: adminID } = useSessionContext();
+  return adminID;
+};
+
 export const logoutApp = async () => {
   await signOut();
   localStorage.clear();

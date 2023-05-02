@@ -73,7 +73,7 @@ export const theme = createTheme({
     },
     h5: {
       fontFamily: ["Oswald"].join(","),
-      fontSize: 10,
+      fontSize: 12,
     },
   },
 });

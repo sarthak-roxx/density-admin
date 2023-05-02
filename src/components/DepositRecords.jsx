@@ -41,43 +41,44 @@ const style = {
 export default function DepositRecords() {
   const dispatch = useDispatch();
 
+  const [fiatTraxns, setFiatTraxns] = useState([]);
   const [transactionHistoryModal, setTransactionHistoryModal] = useState(false);
   const toggleViewTransactionModal = () =>
     setTransactionHistoryModal(!transactionHistoryModal);
 
   const columns = [
-    {
-      field: "date",
-      headerName: "Date",
-      headerClassName: "kyc-column-header",
-      width: 100,
-    },
-    {
-      field: "time",
-      headerName: "Time",
-      headerClassName: "kyc-column-header",
-      width: 100,
-    },
-    {
-      field: "userName",
-      headerName: "Username",
-      headerClassName: "kyc-column-header",
-      width: 100,
-    },
-    {
-      field: "email",
-      headerName: "Email",
-      cellClassName: "kyc-row-style",
-      headerClassName: "kyc-column-header",
-      width: 200,
-    },
-    {
-      field: "bankAccNo",
-      cellClassName: "kyc-row-style",
-      headerName: "Bank Account No",
-      headerClassName: "kyc-column-header",
-      width: 150,
-    },
+    // {
+    //   field: "date",
+    //   headerName: "Date",
+    //   headerClassName: "kyc-column-header",
+    //   width: 100,
+    // },
+    // {
+    //   field: "time",
+    //   headerName: "Time",
+    //   headerClassName: "kyc-column-header",
+    //   width: 100,
+    // },
+    // {
+    //   field: "userName",
+    //   headerName: "Username",
+    //   headerClassName: "kyc-column-header",
+    //   width: 100,
+    // },
+    // {
+    //   field: "email",
+    //   headerName: "Email",
+    //   cellClassName: "kyc-row-style",
+    //   headerClassName: "kyc-column-header",
+    //   width: 200,
+    // },
+    // {
+    //   field: "bankAccNo",
+    //   cellClassName: "kyc-row-style",
+    //   headerName: "Bank Account No",
+    //   headerClassName: "kyc-column-header",
+    //   width: 150,
+    // },
     {
       field: "depositAmount",
       headerName: "Deposit Amount",
@@ -91,12 +92,6 @@ export default function DepositRecords() {
       cellClassName: "kyc-row-style",
       headerClassName: "kyc-column-header",
       width: 150,
-    },
-    {
-      field: "paymentMethod",
-      headerName: "Payment Method",
-      headerClassName: "kyc-column-header",
-      width: 120,
     },
     {
       field: "depositStatus",
@@ -128,7 +123,13 @@ export default function DepositRecords() {
       renderCell: (params) => {
         return (
           <>
-            <ApproveButton>Approve</ApproveButton>
+            <ApproveButton
+              onClick={() => {
+                changeTransaction(params.row.id, "accept");
+              }}
+            >
+              Approve
+            </ApproveButton>
           </>
         );
       },
@@ -141,7 +142,13 @@ export default function DepositRecords() {
       renderCell: (params) => {
         return (
           <>
-            <RejectButton>Delete</RejectButton>
+            <RejectButton
+              onClick={() => {
+                changeTransaction(params.row.id, "reject");
+              }}
+            >
+              Reject
+            </RejectButton>
           </>
         );
       },
@@ -363,9 +370,47 @@ export default function DepositRecords() {
     console.log(data);
   };
 
+  const getuser = async () => {
+    const data = await makeGetReq(
+      "/v1/users/faa77344-2620-44e3-bc5e-bf39a379def4/kyc"
+    );
+    console.log(data);
+  };
+
+  const getListOfFiatTraxn = async () => {
+    const { data } = await makeGetReq("v1/fiat/query-fiat-transaction");
+    console.log(data);
+
+    const rows = data.map((traxn) => ({
+      id: traxn.userID,
+      depositAmount: traxn.amount,
+      refNo: traxn.txnRefID,
+      depositStatus: traxn.fiatTransactionStatus,
+      FiatTxnID: traxn.txnID,
+      RefID: traxn.txnRefID,
+    }));
+
+    setFiatTraxns(rows);
+  };
+
+  const changeTransaction = async (userID) => {
+    const { data } = await makeGetReq(`v1/users/kyc?userID=${userID}`);
+    console.log(data);
+  };
+
+  const processTraxn = async (userID, action) => {
+    const res = await makePostReq(
+      `v1/fiat/transaction/${userID}/procesTransaction`,
+      {
+        ApproveAction: action,
+      }
+    );
+  };
+
   useEffect(() => {
+    // getListOfFiatTraxn();
     // dispatch(fetchUsers());
-    getAllAdmins();
+    // getAllAdmins();
     // revokeRole();
     // addRole();
     // getAllPermissions();
@@ -375,6 +420,7 @@ export default function DepositRecords() {
     // getRolesPermissions();
     // getPermissions();
     // getAllRoles();
+    getuser();
     // getAllUsers();
   }, []);
   return (
@@ -392,7 +438,7 @@ export default function DepositRecords() {
               outline: "none !important",
             },
           }}
-          rows={rows}
+          rows={fiatTraxns}
           columns={columns}
           initialState={{
             pagination: {

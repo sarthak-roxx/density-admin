@@ -89,7 +89,7 @@ export default function UserKycData() {
   };
 
   const fetchUserKycDetails = async () => {
-    const { data } = await makeGetReq(`v1/usrs/${userID}`);
+    const { data } = await makeGetReq(`v1/users/${userID}`);
     setUserKycData(data);
   };
 
@@ -287,34 +287,12 @@ export default function UserKycData() {
                       <Typography variant="h5">14/10/1998</Typography>
                     </Box>
                   </Box>
-
-                  <img
-                    width="40%"
-                    className="small"
-                    src={pp}
-                    alt="aadhar selfie"
-                  />
-                  {isPanSelfieOpen && (
-                    <dialog
-                      className="dialog"
-                      style={{ position: "absolute", zIndex: 1000 }}
-                      open
-                      onClick={handlePanSelfieDialog}
-                    >
-                      <img
-                        className="image"
-                        src={pp}
-                        alt="aadhar dialog selfie"
-                        onClick={handlePanSelfieDialog}
-                      />
-                    </dialog>
-                  )}
                 </Box>
-                <Box mt={1} display="flex" justifyContent="flex-end">
+                {/* <Box mt={1} display="flex" justifyContent="flex-end">
                   <Button onClick={handlePanSelfieDialog} variant="outlined">
                     <Typography variant="h5">Click here to enlarge</Typography>
                   </Button>
-                </Box>
+                </Box> */}
                 <Box marginTop={2}>
                   <Button
                     onClick={toggleConfirmModal}

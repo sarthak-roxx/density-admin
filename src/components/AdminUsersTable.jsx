@@ -119,9 +119,6 @@ export default function AdminUsersTable() {
   const toggleAssignRoleModal = () => setAssignRoleModal(!assignRoleModal);
   const toggleEditRoleModal = () => setEditRoleModal(!editRoleModal);
 
-  console.log(selectedAdmin);
-  console.log(selectedRoleForRevoke);
-
   const adminColumns = [
     {
       field: "name",

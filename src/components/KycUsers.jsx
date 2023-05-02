@@ -1,5 +1,5 @@
 /* eslint-disable no-unused-vars */
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { DataGrid } from "@mui/x-data-grid";
 import { styled } from "@mui/material/styles";
@@ -27,7 +27,7 @@ import { useNavigate } from "react-router-dom";
 import Logout from "./Logout";
 import axios from "axios";
 import { logoutApp } from "../services/Supertokens/SuperTokensHelper";
-import axiosInstance from "../utils/axiosHelper";
+import axiosInstance, { makeGetReq } from "../utils/axiosHelper";
 import { MobileView, BrowserView } from "react-device-detect";
 import { DemoContainer } from "@mui/x-date-pickers/internals/demo";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
@@ -35,6 +35,7 @@ import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import FilterComponent from "./FilterComponent";
 import dayjs from "dayjs";
+import { useSessionContext } from "supertokens-auth-react/recipe/session";
 
 const ShowButton = styled(Button)(({ theme }) => ({
   backgroundColor: "lightblue",
@@ -133,11 +134,12 @@ const accordionItems = [
 ];
 
 export default function KycUsers() {
-  console.log(window.location.href);
+  const { userId: adminID } = useSessionContext();
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [filterByKycStatus, setFilterByKycStatus] = useState("");
   const [filterByEmail, setFilterByEmail] = useState("");
+  const [userRows, setUserRows] = useState([]);
   const [bankModal, setBankModal] = useState(false);
   const toggleBankModal = () => setBankModal(!bankModal);
   const usersColumns = [
@@ -178,9 +180,9 @@ export default function KycUsers() {
       headerName: "KYC Status",
       width: 150,
       renderCell: (params) => {
-        if (params.row.kycStatus === "failed")
+        if (params.row.kycStatus === "FAILED")
           return <FailedTile>{params.row.kycStatus}</FailedTile>;
-        else if (params.row.kycStatus === "success")
+        else if (params.row.kycStatus === "VERIFIED")
           return <SuccessTile>{params.row.kycStatus}</SuccessTile>;
         else return <InProgressTile>{params.row.kycStatus}</InProgressTile>;
       },
@@ -195,7 +197,7 @@ export default function KycUsers() {
           <>
             <ShowButton
               onClick={() => {
-                navigate("/kycData");
+                navigate("/kycData/xyx");
               }}
             >
               View
@@ -224,20 +226,62 @@ export default function KycUsers() {
       },
     },
   ];
-  const handleAlignment = (event, newAlignment) => {
+
+  const handleAlignment = async (event, newAlignment) => {
     setFilterByKycStatus(newAlignment);
+
+    if (!newAlignment) {
+      const { data } = await makeGetReq("/v1/users/all-users?size=10&pageNo=1");
+      const rows = data.map((user) => ({
+        id: user.id,
+        createdOn: user.created,
+        email: user.email,
+        firstName: user.firstName || "---",
+        lastName: user.lastName || "---",
+        kycStatus: user.kycStatus,
+        phone: user.mobileNumber || "---",
+        bankVerifyStatus: user.pennyDropStatus,
+      }));
+      setUserRows(rows);
+    } else {
+      const { data } = await makeGetReq(
+        `v1/kyc/query-kyc?status=${newAlignment}`
+      );
+      const rows = data.map((user) => ({
+        id: user.id,
+        createdOn: user.created,
+        email: user.email,
+        firstName: user.firstName || "---",
+        lastName: user.lastName || "---",
+        kycStatus: user.kycStatus,
+        phone: user.mobileNumber || "---",
+        bankVerifyStatus: user.pennyDropStatus,
+      }));
+      setUserRows(rows);
+    }
   };
-  const usersData = useSelector((state) => state.kycUsers.usersData);
-  const usersKycDataRows = usersData.map((user) => ({
-    id: user.id,
-    createdOn: user.created,
-    email: user.email,
-    firstName: user.firstName,
-    lastName: user.lastName,
-    kycStatus: user.kycStatus,
-    phone: user.mobileNumber,
-    bankVerifyStatus: user.pennyDropStatus,
-  }));
+
+  const fetchAllUsers = async () => {
+    // const data = await makeGetReq("/v1/kyc/query-kyc?status=FAILED");
+
+    const { data } = await makeGetReq("/v1/users/all-users?size=10&pageNo=1");
+    const rows = data.map((user) => ({
+      id: user.id,
+      createdOn: user.created,
+      email: user.email,
+      firstName: user.firstName || "---",
+      lastName: user.lastName || "---",
+      kycStatus: user.kycStatus,
+      phone: user.mobileNumber || "---",
+      bankVerifyStatus: user.pennyDropStatus,
+    }));
+    console.log(rows);
+    setUserRows(rows);
+  };
+
+  useEffect(() => {
+    fetchAllUsers();
+  }, []);
 
   return (
     <>
@@ -262,13 +306,13 @@ export default function KycUsers() {
                 <ToggleButton value="">
                   <Typography variant="h4">All Users</Typography>
                 </ToggleButton>
-                <ToggleButton value="failed">
+                <ToggleButton value="FAILED">
                   <Typography variant="h4">Failed KYC</Typography>
                 </ToggleButton>
-                <ToggleButton value="in_progress">
+                <ToggleButton value="IN_PROGRESS">
                   <Typography variant="h4">In_Progress KYC</Typography>
                 </ToggleButton>
-                <ToggleButton value="success">
+                <ToggleButton value="VERIFIED">
                   <Typography variant="h4">Success KYC</Typography>
                 </ToggleButton>
               </StyledToggleButtonGroup>
@@ -303,7 +347,7 @@ export default function KycUsers() {
                 outline: "none !important",
               },
             }}
-            rows={usersKycDataRows}
+            rows={userRows}
             columns={usersColumns}
             initialState={{
               pagination: {

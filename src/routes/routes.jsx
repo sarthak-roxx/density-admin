@@ -10,7 +10,7 @@ import AdminUsersTable from "../components/AdminUsersTable";
 const densityAdminRoutes = [
   { path: "/", component: <Dashboard /> },
   { path: "/kycUsers", component: <KycUsers /> },
-  { path: "/kycData", component: <UserKycData /> },
+  { path: "/kycData/:userID", component: <UserKycData /> },
   { path: "/withdraw", component: <WithDraw /> },
   { path: "/deposit-records", component: <DepositRecords /> },
   { path: "/reward", component: <RewardScreen /> },

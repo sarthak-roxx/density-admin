@@ -1,9 +1,18 @@
 /* eslint-disable no-unused-vars */
 import { DataGrid } from "@mui/x-data-grid";
 import { styled } from "@mui/material/styles";
-import { Box, Button } from "@mui/material";
+import {
+  Box,
+  Button,
+  Paper,
+  ToggleButton,
+  ToggleButtonGroup,
+  Typography,
+} from "@mui/material";
 import DownloadIcon from "@mui/icons-material/Download";
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { makeGetReq, makePostReq } from "../utils/axiosHelper";
+import { useSessionContext } from "supertokens-auth-react/recipe/session";
 
 const ShowButton = styled(Button)(({ theme }) => ({
   backgroundColor: "lightblue",
@@ -17,32 +26,68 @@ const DownloadButton = styled(Button)(({ theme }) => ({
   border: "1px solid #757500",
 }));
 
+const StyledToggleButtonGroup = styled(ToggleButtonGroup)(({ theme }) => ({
+  "& .MuiToggleButtonGroup-grouped": {
+    margin: theme.spacing(0.5),
+    border: 0,
+    "&.Mui-disabled": {
+      border: 0,
+    },
+    "&:not(:first-of-type)": {
+      borderRadius: theme.shape.borderRadius,
+    },
+    "&:first-of-type": {
+      borderRadius: theme.shape.borderRadius,
+    },
+  },
+}));
+
 const withdrawColumns = [
   {
-    field: "userName",
-    headerName: "Username",
+    field: "date",
+    headerName: "Date",
     cellClassName: "kyc-row-style",
     headerClassName: "kyc-column-header",
   },
   {
-    field: "status",
-    headerName: "Status",
+    field: "time",
+    headerName: "Time",
+    cellClassName: "kyc-row-style",
+    headerClassName: "kyc-column-header",
+  },
+  {
+    field: "email",
+    headerName: "Email",
+    cellClassName: "kyc-row-style",
+    width: 150,
+    headerClassName: "kyc-column-header",
+  },
+  {
+    field: "username",
+    headerName: "Username",
     cellClassName: "kyc-row-style",
     width: 100,
     headerClassName: "kyc-column-header",
   },
   {
-    field: "amount",
-    headerName: "Requested amount",
+    field: "bankAccNo",
+    headerName: "Bank Account No",
     cellClassName: "kyc-row-style",
-    width: 160,
+    width: 200,
     headerClassName: "kyc-column-header",
   },
   {
-    field: "date",
-    headerName: "Datetime",
+    field: "isfc",
+    headerName: "ISFC No",
     cellClassName: "kyc-row-style",
     width: 200,
+    headerClassName: "kyc-column-header",
+  },
+  {
+    field: "amount",
+    headerName: "Amount",
+    cellClassName: "kyc-row-style",
+    width: 160,
     headerClassName: "kyc-column-header",
   },
   {
@@ -59,14 +104,14 @@ const withdrawColumns = [
     },
   },
   {
-    field: "download",
-    headerName: "Download",
-    width: 150,
+    field: "appRej",
+    headerName: "Approve/Reject",
+    width: 200,
     headerClassName: "kyc-column-header",
     renderCell: (params) => {
       return (
         <>
-          <DownloadButton endIcon={<DownloadIcon />}>Download</DownloadButton>
+          <ShowButton>Transaction History</ShowButton>
         </>
       );
     },
@@ -104,9 +149,70 @@ const withdrawRows = [
   },
 ];
 
+// const getUsersAccountDetails = async () => {
+//   const data = await makeGetReq(
+//     "v1/bank-accounts?userID=1bdc3aca-76dc-47c8-8e49-c071bad768e2"
+//   );
+//   console.log(data);
+// };
+const getUsersAccountDetails = async () => {
+  const data = await makeGetReq("v1/fiat/query-fiat-transaction");
+  console.log(data);
+};
+
+const approveTransaction = async () => {
+  const { data } = await makeGetReq(
+    "v1/users/00be7f4c-d485-4c8f-a911-80925202007b/kyc?userID=00be7f4c-d485-4c8f-a911-80925202007b"
+  );
+  console.log(data);
+};
+
 export default function WithDraw() {
+  const { userId: adminID } = useSessionContext();
+  const [filterByKycStatus, setFilterByKycStatus] = useState("");
+  useEffect(() => {
+    getUsersAccountDetails();
+    // approveTransaction();
+  }, []);
+  const handleAlignment = (event, newAlignment) => {
+    setFilterByKycStatus(newAlignment);
+  };
   return (
     <>
+      <Box display="flex">
+        <Box mt={1} width="55%" display="flex" justifyContent="flex-end">
+          <Paper
+            elevation={0}
+            sx={{
+              display: "flex",
+              border: (theme) => `1px solid ${theme.palette.divider}`,
+              flexWrap: "wrap",
+              width: "fit-content",
+            }}
+          >
+            <StyledToggleButtonGroup
+              size="small"
+              value={filterByKycStatus}
+              exclusive
+              onChange={handleAlignment}
+            >
+              <ToggleButton value="">
+                <Typography variant="h4">Default</Typography>
+              </ToggleButton>
+              <ToggleButton value="failed">
+                <Typography variant="h4">Equitas</Typography>
+              </ToggleButton>
+              <ToggleButton value="in_progress">
+                <Typography variant="h4">IDFC</Typography>
+              </ToggleButton>
+            </StyledToggleButtonGroup>
+          </Paper>
+        </Box>
+        <Box mt={1} mr={2} width="45%" display="flex" justifyContent="flex-end">
+          <Button variant="contained">Download</Button>
+        </Box>
+      </Box>
+
       <Box sx={{ p: 2, height: 650, width: "100%" }}>
         <DataGrid
           sx={{
@@ -120,7 +226,7 @@ export default function WithDraw() {
               outline: "none !important",
             },
           }}
-          rows={withdrawRows}
+          rows={[]}
           columns={withdrawColumns}
           initialState={{
             pagination: {

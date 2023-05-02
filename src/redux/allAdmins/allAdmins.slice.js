@@ -1,10 +1,10 @@
 /* eslint-disable */
 import { createSlice } from "@reduxjs/toolkit";
-import uuid from "react-uuid";
 
 const initialState = {
   admins: [],
   adminPermissions: [],
+  currentAdminId: "",
 };
 
 const admins = createSlice({
@@ -22,9 +22,12 @@ const admins = createSlice({
         state.adminPermissions.push(action.payload);
       }
     },
-    
+    addAdminId(state, action) {
+      console.log(action.payload);
+      state.currentAdminId = action.payload;
+    },
   },
 });
 
-export const { addAllAdmins, addAdminPermissions } = admins.actions;
+export const { addAllAdmins, addAdminPermissions, addAdminId } = admins.actions;
 export default admins.reducer;
