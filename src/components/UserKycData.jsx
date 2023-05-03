@@ -15,6 +15,7 @@ import {
   Accordion,
   AccordionSummary,
   AccordionDetails,
+  TextField,
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { makeGetReq } from "../utils/axiosHelper";
@@ -63,6 +64,10 @@ export default function UserKycData() {
   const isNotMobile = useMediaQuery("(min-width:768px)");
   const [enlarge, setEnlarge] = useState(false);
   const toggleEnlarge = () => setEnlarge(!enlarge);
+
+  const [userRemark, setUserRemark] = useState("");
+  const [remarkModal, setRemarkModal] = useState(false);
+  const toggleRemarkModal = () => setRemarkModal(!remarkModal);
 
   const [isAadharSelfieOpen, setIsAadharSelfieOpen] = useState(false);
   const handleAadharSelfieDialog = () =>
@@ -453,6 +458,16 @@ export default function UserKycData() {
               </Button>
             </Box>
           </Box>
+        </Box>
+      </Modal>
+
+      <Modal open={remarkModal} onClose={toggleRemarkModal}>
+        <Box sx={style}>
+          <TextField
+            label="Add a remark"
+            value={userRemark}
+            onChange={(e) => setUserRemark(e.target.value)}
+          />
         </Box>
       </Modal>
     </>

@@ -56,17 +56,17 @@ const withdrawColumns = [
     headerClassName: "kyc-column-header",
   },
   {
-    field: "email",
-    headerName: "Email",
-    cellClassName: "kyc-row-style",
-    width: 150,
-    headerClassName: "kyc-column-header",
-  },
-  {
     field: "username",
     headerName: "Username",
     cellClassName: "kyc-row-style",
     width: 100,
+    headerClassName: "kyc-column-header",
+  },
+  {
+    field: "email",
+    headerName: "Email",
+    cellClassName: "kyc-row-style",
+    width: 150,
     headerClassName: "kyc-column-header",
   },
   {
@@ -77,8 +77,8 @@ const withdrawColumns = [
     headerClassName: "kyc-column-header",
   },
   {
-    field: "isfc",
-    headerName: "ISFC No",
+    field: "ifsc",
+    headerName: "IFSC No",
     cellClassName: "kyc-row-style",
     width: 200,
     headerClassName: "kyc-column-header",

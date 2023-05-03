@@ -1,6 +1,6 @@
 /* eslint-disable no-unused-vars */
 import React, { useEffect, useState } from "react";
-import { Box, Button, Modal } from "@mui/material";
+import { Box, Button, Modal, Typography } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import { styled } from "@mui/material/styles";
 // import axiosInstance from "../utils/axiosHelper";
@@ -38,8 +38,28 @@ const style = {
   p: 4,
 };
 
+const messageModalStyles = {
+  position: "absolute",
+  top: "15%",
+  left: "50%",
+  transform: "translate(-50%, -50%)",
+  width: "20%",
+  height: "20%",
+  bgcolor: "#101010",
+  border: "2px solid #000",
+  borderRadius: "5px",
+  boxShadow: 24,
+  p: 4,
+};
+
 export default function DepositRecords() {
   const dispatch = useDispatch();
+
+  const [message, setMessage] = useState("");
+  const [messageModal, setMessageModal] = useState(false);
+  const toggleMessageModal = () => setMessageModal(!messageModal);
+
+  const [fiatTraxnHistoryRows, setFiatTraxnHistoryRows] = useState([]);
 
   const [fiatTraxns, setFiatTraxns] = useState([]);
   const [transactionHistoryModal, setTransactionHistoryModal] = useState(false);
@@ -68,15 +88,15 @@ export default function DepositRecords() {
   ];
 
   const columns = [
-    // {
-    //   field: "date",
-    //   headerName: "Date",
-    //   headerClassName: "kyc-column-header",
-    //   width: 100,
-    // },
     {
-      field: "timestamp",
-      headerName: "Timestamp",
+      field: "date",
+      headerName: "Date",
+      headerClassName: "kyc-column-header",
+      width: 100,
+    },
+    {
+      field: "time",
+      headerName: "Time",
       headerClassName: "kyc-column-header",
       width: 200,
     },
@@ -108,11 +128,11 @@ export default function DepositRecords() {
       width: 150,
     },
     {
-      field: "refNo",
+      field: "RefID",
       headerName: "Reference Number",
       cellClassName: "kyc-row-style",
       headerClassName: "kyc-column-header",
-      width: 150,
+      width: 200,
     },
     {
       field: "depositStatus",
@@ -129,7 +149,12 @@ export default function DepositRecords() {
       renderCell: (params) => {
         return (
           <>
-            <ViewButton onClick={toggleViewTransactionModal}>
+            <ViewButton
+              onClick={async () => {
+                toggleViewTransactionModal();
+                await getFiatTraxnById(params.row.UserID);
+              }}
+            >
               Transaction History
             </ViewButton>
           </>
@@ -142,11 +167,19 @@ export default function DepositRecords() {
       headerClassName: "kyc-column-header",
       width: 100,
       renderCell: (params) => {
+        // console.log(params.row.RefID);
+        // console.log(params.row.FiatTxnID);
+        // console.log(params.row.UserID);
         return (
           <>
             <ApproveButton
               onClick={() => {
-                changeTransaction(params.row.id, "accept");
+                processTraxn(
+                  params.row.UserID,
+                  "approve",
+                  params.row.RefID,
+                  params.row.FiatTxnID
+                );
               }}
             >
               Approve
@@ -165,7 +198,12 @@ export default function DepositRecords() {
           <>
             <RejectButton
               onClick={() => {
-                changeTransaction(params.row.id, "reject");
+                processTraxn(
+                  params.row.UserID,
+                  "reject",
+                  params.row.RefID,
+                  params.row.FiatTxnID
+                );
               }}
             >
               Reject
@@ -175,68 +213,7 @@ export default function DepositRecords() {
       },
     },
   ];
-  const rows = [
-    {
-      id: 1,
-      date: "24/01/2021",
-      time: "23:12",
-      userName: "jon.snow",
-      email: "jon.snow@gmail.com",
-      bankAccNo: "XXXXXXXX34",
-      depositAmount: "₹450",
-      refNo: 888888888,
-      paymentMethod: "Card",
-      depositStatus: "pending",
-    },
-    {
-      id: 2,
-      date: "24/01/2021",
-      time: "23:12",
-      userName: "jon.snow",
-      email: "jon.snow@gmail.com",
-      bankAccNo: "XXXXXXXX34",
-      depositAmount: "₹450",
-      refNo: 888888888,
-      paymentMethod: "Card",
-      depositStatus: "pending",
-    },
-    {
-      id: 3,
-      date: "24/01/2021",
-      time: "23:12",
-      userName: "jon.snow",
-      email: "jon.snow@gmail.com",
-      bankAccNo: "XXXXXXXX34",
-      depositAmount: "₹450",
-      refNo: 888888888,
-      paymentMethod: "Card",
-      depositStatus: "pending",
-    },
-    {
-      id: 4,
-      date: "24/01/2021",
-      time: "23:12",
-      userName: "jon.snow",
-      email: "jon.snow@gmail.com",
-      bankAccNo: "XXXXXXXX34",
-      depositAmount: "₹450",
-      refNo: 888888888,
-      paymentMethod: "Card",
-      depositStatus: "pending",
-    },
-    {
-      id: 5,
-      date: "24/01/2021",
-      time: "23:12",
-      userName: "jon.snow",
-      email: "jon.snow@gmail.com",
-      bankAccNo: "XXXXXXXX34",
-      depositAmount: "₹450",
-      refNo: 888888888,
-      paymentMethod: "Card",
-      depositStatus: "pending",
-    },
-  ];
+
   const transactionRows = [
     {
       id: 1,
@@ -278,36 +255,40 @@ export default function DepositRecords() {
   const transactionColumns = [
     {
       field: "date",
+      headerClassName: "kyc-column-header",
       headerName: "Date",
       width: 200,
     },
     {
       field: "time",
+      headerClassName: "kyc-column-header",
       headerName: "Time",
       width: 100,
     },
     {
-      field: "amount",
-      headerName: "Amount",
-      width: 200,
-    },
-    {
-      field: "transactionType",
-      headerName: "Transaction Type",
-      width: 150,
-    },
-    {
-      field: "status",
-      headerName: "Status",
-      width: 100,
-    },
-    {
-      field: "referenceId",
+      field: "RefID",
+      headerClassName: "kyc-column-header",
       headerName: "Reference ID",
       width: 300,
     },
+    {
+      field: "depositAmount",
+      headerClassName: "kyc-column-header",
+      headerName: "Amount",
+      width: 200,
+    },
+    // {
+    //   field: "transactionType",
+    //   headerName: "Transaction Type",
+    //   width: 150,
+    // },
+    {
+      field: "depositStatus",
+      headerClassName: "kyc-column-header",
+      headerName: "Status",
+      width: 100,
+    },
   ];
-  // const users = useSelector((state) => state.users.users);
 
   const getuser = async () => {
     const data = await makeGetReq(
@@ -317,61 +298,80 @@ export default function DepositRecords() {
   };
 
   const getListOfFiatTraxn = async () => {
-    const { data } = await makeGetReq("v1/fiat/query-fiat-transaction");
-    console.log(data);
+    const { data } = await makeGetReq(
+      "v1/fiat/query-fiat-transaction?type=INR_DEPOSIT"
+    );
+    // console.log(data);
 
     const rows = data.map((traxn) => ({
       id: traxn.id,
-      // userName: traxn.userFirstName + " " + traxn.userLastName,
       userName:
         traxn.userFirstName && traxn.userLastName
           ? traxn.userFirstName + " " + traxn.userLastName
           : "---",
       depositAmount: traxn.amount,
-      refNo: traxn.txnRefID,
       depositStatus: traxn.fiatTransactionStatus,
       bankAccNo: traxn.userBankAccount,
       email: traxn.userEmail,
-      timestamp: new Date(traxn.createdAt),
-      // FiatTxnID: traxn.txnID,
-      // RefID: traxn.txnRefID,
+      date: new Date(traxn.createdAt).toLocaleDateString(),
+      time: new Date(traxn.createdAt).toLocaleTimeString(),
+      FiatTxnID: traxn.txnID,
+      RefID: traxn.txnRefID,
+      UserID: traxn.userID,
     }));
 
     setFiatTraxns(rows);
   };
 
-  const changeTransaction = async (userID) => {
-    const { data } = await makeGetReq(`v1/users/kyc?userID=${userID}`);
-    console.log(data);
+  const getFiatTraxnById = async (userId) => {
+    const { data } = await makeGetReq(
+      `v1/fiat/query-fiat-transaction?userID=${userId}&type=INR_DEPOSIT`
+    );
+    const rows = data.map((traxn) => ({
+      id: traxn.id,
+      userName:
+        traxn.userFirstName && traxn.userLastName
+          ? traxn.userFirstName + " " + traxn.userLastName
+          : "---",
+      email: traxn.userEmail,
+      date: new Date(traxn.createdAt).toLocaleDateString(),
+      time: new Date(traxn.createdAt).toLocaleTimeString(),
+      depositAmount: traxn.amount,
+      depositStatus: traxn.fiatTransactionStatus,
+      RefID: traxn.txnRefID,
+    }));
+    setFiatTraxnHistoryRows(rows);
   };
 
-  const processTraxn = async (userID, action) => {
-    const res = await makePostReq(
-      `v1/fiat/transaction/${userID}/procesTransaction`,
-      {
-        ApproveAction: action,
-      }
-    );
+  const processTraxn = async (UserID, action, RefID, FiatTxnID) => {
+    try {
+      const res = await makePostReq(
+        `v1/fiat/transaction/${UserID}/processTransaction`,
+        {
+          ApproveAction: action,
+          RefID,
+          FiatTxnID,
+          UserID,
+        }
+      );
+      toggleMessageModal();
+      setMessage(`Transaction completed with an action ${action}`);
+      await getListOfFiatTraxn();
+    } catch (err) {
+      toggleMessageModal();
+      setMessage(err.response.data.ErrorMessage);
+      await getListOfFiatTraxn();
+    }
   };
 
   useEffect(() => {
     getListOfFiatTraxn();
-    // dispatch(fetchUsers());
-    // getAllAdmins();
-    // revokeRole();
-    // addRole();
-    // getAllPermissions();
-    // makePermission();
-    // assignRole();
-    // getAdminPermissions();
-    // getRolesPermissions();
-    // getPermissions();
-    // getAllRoles();
-    // getuser();
-    // getAllUsers();
   }, []);
   return (
     <>
+      <Box display="flex" justifyContent="center">
+        <Typography variant="h1">Deposit Records</Typography>
+      </Box>
       <Box sx={{ height: 500, width: "100%", p: 1 }}>
         <DataGrid
           sx={{
@@ -445,8 +445,8 @@ export default function DepositRecords() {
                 display: "none",
               },
             }}
-            rows={[]}
-            columns={depositLogs}
+            rows={fiatTraxnHistoryRows}
+            columns={transactionColumns}
             initialState={{
               pagination: {
                 paginationModel: {
@@ -459,6 +459,14 @@ export default function DepositRecords() {
             disableRowSelectionOnClick
             isRowSelectable={() => false}
           />
+        </Box>
+      </Modal>
+
+      <Modal open={messageModal} onClose={toggleMessageModal}>
+        <Box sx={messageModalStyles}>
+          <Typography variant="h3" color="#ebff25">
+            {message}
+          </Typography>
         </Box>
       </Modal>
     </>
