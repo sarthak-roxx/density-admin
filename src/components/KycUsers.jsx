@@ -43,6 +43,17 @@ const ShowButton = styled(Button)(({ theme }) => ({
   border: "1px solid blue",
 }));
 
+const ApproveButton = styled(Button)(({ theme }) => ({
+  background: "lightgreen",
+  borderRadius: "4px",
+  border: "1px solid green",
+}));
+const RejectButton = styled(Button)(({ theme }) => ({
+  background: "#f93e3e",
+  borderRadius: "4px",
+  border: "1px solid black",
+}));
+
 const FailedTile = styled(Box)(({ theme }) => ({
   backgroundColor: "#ffcccb",
   borderRadius: "4px",
@@ -134,7 +145,7 @@ const accordionItems = [
 ];
 
 export default function KycUsers() {
-  const { userId: adminID } = useSessionContext();
+  const [showLogs, setShowLogs] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [filterByKycStatus, setFilterByKycStatus] = useState("");
@@ -142,6 +153,78 @@ export default function KycUsers() {
   const [userRows, setUserRows] = useState([]);
   const [bankModal, setBankModal] = useState(false);
   const toggleBankModal = () => setBankModal(!bankModal);
+
+  const kycLogsColumns = [
+    {
+      field: "createdOn",
+      headerClassName: "kyc-column-header",
+      headerName: "Created On",
+      valueFormatter: (params) => dayjs(params.value).format("DD/MM/YYYY"),
+      width: 150,
+    },
+    {
+      field: "firstName",
+      headerClassName: "kyc-column-header",
+      headerName: "First name",
+      width: 150,
+    },
+    {
+      field: "lastName",
+      headerClassName: "kyc-column-header",
+      headerName: "Last name",
+      width: 150,
+    },
+    {
+      field: "email",
+      headerClassName: "kyc-column-header",
+      headerName: "Email",
+      width: 200,
+    },
+    {
+      field: "phone",
+      headerClassName: "kyc-column-header",
+      headerName: "Phone",
+      width: 150,
+    },
+    {
+      field: "kycStatus",
+      headerClassName: "kyc-column-header",
+      headerName: "Kyc Status",
+      width: 150,
+    },
+    {
+      field: "view",
+      headerClassName: "kyc-column-header",
+      headerName: "Show KYC Data",
+      width: 150,
+      renderCell: (params) => {
+        return (
+          <>
+            <ShowButton
+              onClick={() => {
+                navigate(`/kycData/${params.id}`);
+              }}
+            >
+              View
+            </ShowButton>
+          </>
+        );
+      },
+    },
+    {
+      field: "admin",
+      headerClassName: "kyc-column-header",
+      headerName: "Admin",
+      width: 150,
+    },
+    {
+      field: "remarks",
+      headerClassName: "kyc-column-header",
+      headerName: "Remarks",
+      width: 150,
+    },
+  ];
+
   const usersColumns = [
     {
       field: "createdOn",
@@ -221,6 +304,32 @@ export default function KycUsers() {
         return (
           <>
             <ShowButton onClick={toggleBankModal}>Bank Details</ShowButton>
+          </>
+        );
+      },
+    },
+    {
+      field: "approve",
+      headerClassName: "kyc-column-header",
+      headerName: "Approve",
+      width: 150,
+      renderCell: (params) => {
+        return (
+          <>
+            <ApproveButton onClick={toggleBankModal}>Approve</ApproveButton>
+          </>
+        );
+      },
+    },
+    {
+      field: "reject",
+      headerClassName: "kyc-column-header",
+      headerName: "Reject",
+      width: 150,
+      renderCell: (params) => {
+        return (
+          <>
+            <RejectButton onClick={toggleBankModal}>Reject</RejectButton>
           </>
         );
       },
@@ -305,14 +414,11 @@ export default function KycUsers() {
                 <ToggleButton value="">
                   <Typography variant="h4">All Users</Typography>
                 </ToggleButton>
-                <ToggleButton value="FAILED">
-                  <Typography variant="h4">Failed KYC</Typography>
-                </ToggleButton>
                 <ToggleButton value="IN_PROGRESS">
                   <Typography variant="h4">In_Progress KYC</Typography>
                 </ToggleButton>
-                <ToggleButton value="VERIFIED">
-                  <Typography variant="h4">Success KYC</Typography>
+                <ToggleButton value="IN_REVIEW">
+                  <Typography variant="h4">IN_REVIEW</Typography>
                 </ToggleButton>
               </StyledToggleButtonGroup>
             </Paper>
@@ -330,10 +436,18 @@ export default function KycUsers() {
             <Button onClick={() => dispatch(resetFilter())} variant="contained">
               Reset filter
             </Button>
+            <Box display="flex" justifyContent="flex-end">
+              <Button
+                variant="contained"
+                onClick={() => setShowLogs(!showLogs)}
+              >
+                Show All KYC logs
+              </Button>
+            </Box>
           </Box>
         </Box>
 
-        <Box sx={{ p: 2, height: 650, width: "100%" }}>
+        <Box sx={{ p: 2, height: 500, width: "100%" }}>
           <DataGrid
             sx={{
               ".MuiDataGrid-columnHeaderCheckbox": {
@@ -359,6 +473,13 @@ export default function KycUsers() {
             checkboxSelection
             disableRowSelectionOnClick
           />
+        </Box>
+
+        <Box display="flex" justifyContent="center">
+          <Typography variant="h2">KYC Logs</Typography>
+        </Box>
+        <Box sx={{ p: 2, height: 650, width: "100%" }}>
+          <DataGrid columns={kycLogsColumns} rows={[]} />
         </Box>
 
         <Modal open={bankModal} onClose={toggleBankModal}>

@@ -20,7 +20,12 @@ import {
 import CloseIcon from "@mui/icons-material/Close";
 import { useDispatch, useSelector } from "react-redux";
 import { DataGrid } from "@mui/x-data-grid";
-import { makeGetReq, makePatchReq, makePostReq } from "../utils/axiosHelper";
+import {
+  makeDeleteReq,
+  makeGetReq,
+  makePatchReq,
+  makePostReq,
+} from "../utils/axiosHelper";
 import { addAllAdmins } from "../redux/allAdmins/allAdmins.slice";
 import ConfirmationModal from "./ConfirmationModal";
 import InfoModal from "./InfoModal";
@@ -169,7 +174,7 @@ export default function AdminUsersTable() {
       },
     },
     {
-      field: "deleteAdmin",
+      field: "editAdmin",
       headerName: "Edit",
       width: 200,
       renderCell: (params) => {
@@ -187,6 +192,25 @@ export default function AdminUsersTable() {
         );
       },
     },
+    {
+      field: "deleteAdmin",
+      headerName: "Delete",
+      width: 200,
+      renderCell: (params) => {
+        return (
+          <>
+            <DeleteButton
+              onClick={async () => {
+                await deleteAdmin(params.row.id);
+                window.location.reload();
+              }}
+            >
+              delete
+            </DeleteButton>
+          </>
+        );
+      },
+    },
   ];
 
   const createAnAdmin = async (adminName, adminEmail, isSuperAdmin) => {
@@ -195,6 +219,10 @@ export default function AdminUsersTable() {
       email: adminEmail,
       willSuperAdmin: Boolean(isSuperAdmin),
     });
+  };
+
+  const deleteAdmin = async (adminID) => {
+    const res = await makeDeleteReq(`v1/admin/${adminID}`);
   };
 
   const getAllAdmins = async () => {

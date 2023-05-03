@@ -23,4 +23,9 @@ export const makePatchReq = async (apiRoute, payload) => {
   return data;
 };
 
+export const makeDeleteReq = async (apiRoute) => {
+  const res = await axiosInstance.delete(apiRoute);
+  return res;
+};
+
 export default axiosInstance;
