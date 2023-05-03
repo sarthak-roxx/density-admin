@@ -1,4 +1,4 @@
-/* eslint-disable no-unused-vars */
+/* eslint-disable  */
 import { createSlice } from "@reduxjs/toolkit";
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import axiosInstance, { makeGetReq } from "../../utils/axiosHelper";

@@ -1,4 +1,4 @@
-/* eslint-disable no-unused-vars */
+/* eslint-disable */
 import React, { useEffect, useState } from "react";
 import {
   Box,
@@ -21,7 +21,7 @@ import { makeGetReq } from "../utils/axiosHelper";
 import { MobileView } from "react-device-detect";
 import { DataGrid } from "@mui/x-data-grid";
 import pp from "../utils/imgs/PP.jpg";
-import { useParams } from "react-router-dom";
+import { useLocation, useParams } from "react-router-dom";
 
 const style = {
   position: "absolute",
@@ -54,11 +54,13 @@ const adminLogsColumns = [
 ];
 
 export default function UserKycData() {
+  const {state} = useLocation();
+  console.log("sttate", state)
   const { userID } = useParams();
   const [userKycData, setUserKycData] = useState({});
   const [confirmModalOpen, setConfirmModalOpen] = useState(false);
   const toggleConfirmModal = () => setConfirmModalOpen(!confirmModalOpen);
-  const isMobile = useMediaQuery("(min-width:768px)");
+  const isNotMobile = useMediaQuery("(min-width:768px)");
   const [enlarge, setEnlarge] = useState(false);
   const toggleEnlarge = () => setEnlarge(!enlarge);
 
@@ -90,7 +92,7 @@ export default function UserKycData() {
 
   const fetchUserKycDetails = async () => {
     const { data } = await makeGetReq(
-      `v1/users/${userID}/kyc?userID=${userID}`
+      `v1/users/217dc3a3-aa10-4331-b79c-7887e3c61e8d/kyc?userID=217dc3a3-aa10-4331-b79c-7887e3c61e8d`
     );
     setUserKycData(data);
   };
@@ -99,8 +101,6 @@ export default function UserKycData() {
     fetchUserKycDetails();
   }, []);
 
-  console.log(userKycData);
-
   return (
     <>
       <Box margin={1}>
@@ -108,50 +108,50 @@ export default function UserKycData() {
           <CardContent>
             <Box
               display="flex"
-              flexDirection={isMobile ? "row" : "column"}
+              flexDirection={isNotMobile ? "row" : "column"}
               gap={2}
             >
               <Box
                 boxShadow="15px"
-                border="2px solid grey"
-                borderRadius="5px"
                 padding={1}
               >
                 <Typography>Name</Typography>
                 <hr />
-                <Typography variant="h4">Jon Snow</Typography>
+                <Typography variant="h4">{userKycData?.documentDetail?.POAData?.name}</Typography>
               </Box>
-              <Box border="2px solid grey" borderRadius="5px" padding={1}>
+              <Box  padding={1}>
                 <Typography>Email</Typography>
                 <hr />
-                <Typography variant="h4">jon.snow@gmail.com</Typography>
+                <Typography variant="h4">{state?.email}</Typography>
               </Box>
-              <Box border="2px solid grey" borderRadius="5px" padding={1}>
+              <Box  padding={1}>
                 <Typography>DOB</Typography>
                 <hr />
-                <Typography variant="h4">14/10/1998</Typography>
+                <Typography variant="h4">{userKycData?.documentDetail?.POAData?.DOB}</Typography>
               </Box>
-              <Box border="2px solid grey" borderRadius="5px" padding={1}>
+              <Box  padding={1}>
                 <Typography>Gender</Typography>
                 <hr />
-                <Typography variant="h4">Male</Typography>
+                <Typography variant="h4">{userKycData?.documentDetail?.POAData?.gender === 'M' ? "Male" : "Female"}</Typography>
               </Box>
-              <Box border="2px solid grey" borderRadius="5px" padding={1}>
+              <Box  padding={1}>
                 <Typography>Phone</Typography>
                 <hr />
-                <Typography variant="h4">8585858556</Typography>
+                <Typography variant="h4">{state?.phone}</Typography>
               </Box>
-              <Box border="2px solid grey" borderRadius="5px" padding={1}>
+              <Box  padding={1}>
                 <Typography>Name Match</Typography>
                 <hr />
-                <Typography variant="h4">65%</Typography>
+                <Typography variant="h4">{(userKycData?.documentDetail?.IdentityMatchData?.nameMatchScore / 5) * 100 } %</Typography>
               </Box>
-              <Box border="2px solid grey" borderRadius="5px" padding={1}>
+              <Box  padding={1}>
                 <Typography>Selfie Match</Typography>
                 <hr />
-                <Typography variant="h4">75%</Typography>
+                <Typography variant="h4">
+                {userKycData?.documentDetail?.FaceMatchData?.matchPercentWithPOAImage}%
+                </Typography>
               </Box>
-              <Box border="2px solid grey" borderRadius="5px" padding={1}>
+              <Box padding={1}>
                 <Typography>Method</Typography>
                 <hr />
                 <Typography variant="h4">DIGILOCKER/DOCUMENT UPLOAD</Typography>
@@ -163,16 +163,18 @@ export default function UserKycData() {
 
       <Box
         display="flex"
-        flexDirection={isMobile ? "row" : "column"}
+        flexDirection={isNotMobile ? "row" : "column"}
         margin={1}
+        marginBottom={10}
       >
         <Box
-          width={isMobile ? "70%" : "100%"}
+          width={isNotMobile ? "70%" : "100%"}
           display="flex"
-          flexDirection={isMobile ? "row" : "column"}
+          flexDirection={isNotMobile ? "row" : "column"}
           justifyContent="space-around"
+          alignItems="center"
         >
-          <Box width={isMobile ? "40%" : "100%"}>
+          <Box width={isNotMobile ? "35%" : "100%"}>
             <Card>
               <CardContent>
                 <Box display="flex" justifyContent="center" mb={2}>
@@ -188,31 +190,45 @@ export default function UserKycData() {
                       <Typography color="grey" variant="h5">
                         Name:
                       </Typography>
-                      <Typography variant="h5">Jon Snow</Typography>
+                      <Typography variant="h5">
+                        {userKycData?.documentDetail?.POAData?.name}
+                      </Typography>
                     </Box>
                     <Box display="flex" gap={1}>
                       <Typography color="grey" variant="h5">
                         Gender:
                       </Typography>
-                      <Typography variant="h5">Male</Typography>
+                      <Typography variant="h5">
+                        {userKycData?.documentDetail?.POAData?.gender === 'M' ? "Male" : "Female"}
+                      </Typography>
                     </Box>
                     <Box display="flex" gap={1}>
                       <Typography color="grey" variant="h5">
                         DOB:
                       </Typography>
-                      <Typography variant="h5">14/10/1998</Typography>
+                      <Typography variant="h5">
+                        {userKycData?.documentDetail?.POAData?.DOB}
+                      </Typography>
                     </Box>
                     <Box display="flex" gap={1} width={10}>
                       <Typography color="grey" variant="h5">
                         Aadhar No.:
                       </Typography>
-                      <Typography variant="h5">XXXXXXXXXXX83</Typography>
+                      <Typography variant="h5">
+                        {userKycData?.documentDetail?.POAData?.IDNumber}
+                      </Typography>
                     </Box>
                     <Box display="flex" gap={1}>
                       <Typography color="grey" variant="h5">
                         Address:
                       </Typography>
-                      <Typography variant="h5"></Typography>
+                      <Typography variant="h5" sx={{maxWidth:"120px"}}>
+                        {userKycData?.documentDetail?.POAData?.address?.house +
+                          ", " +
+                          userKycData?.documentDetail?.POAData?.address?.landmark +
+                          ", " +
+                          userKycData?.documentDetail?.POAData?.address?.landmark}
+                      </Typography>
                     </Box>
                   </Box>
 
@@ -250,7 +266,7 @@ export default function UserKycData() {
                     <Typography variant="h5">Click here to enlarge</Typography>
                   </Button>
                 </Box>
-                <Box marginTop={2}>
+                {/* <Box marginTop={2}>
                   <Button
                     onClick={toggleConfirmModal}
                     color="success"
@@ -259,40 +275,34 @@ export default function UserKycData() {
                   >
                     Approve
                   </Button>
-                </Box>
+                </Box> */}
               </CardContent>
             </Card>
           </Box>
 
-          <Box width={isMobile ? "40%" : "100%"}>
+          <Box width={isNotMobile ? "20%" : "100%"} minHeight={"250px"}>
             <Card>
               <CardContent>
                 <Box display="flex" justifyContent="center" marginBottom={2}>
                   <Typography variant="h3">PAN Details</Typography>
                 </Box>
-                <Box
-                  display="flex"
-                  justifyContent="space-between"
-                  alignItems="center"
-                >
+                <Box display="flex" justifyContent="center" alignItems="center">
                   <Box>
                     <Box display="flex" gap={1}>
                       <Typography color="grey" variant="h5">
                         Name:
                       </Typography>
-                      <Typography variant="h5">Jon Snow</Typography>
+                      <Typography variant="h5">
+                        {userKycData?.documentDetail?.POIData?.nameOnCard}
+                      </Typography>
                     </Box>
                     <Box display="flex" gap={1}>
                       <Typography color="grey" variant="h5">
                         Pan No.:
                       </Typography>
-                      <Typography variant="h5">XXXXXXXX87</Typography>
-                    </Box>
-                    <Box display="flex" gap={1}>
-                      <Typography color="grey" variant="h5">
-                        DOB:
+                      <Typography variant="h5">
+                        {userKycData?.documentDetail?.POIData?.IDNumber}
                       </Typography>
-                      <Typography variant="h5">14/10/1998</Typography>
                     </Box>
                   </Box>
                 </Box>
@@ -301,7 +311,7 @@ export default function UserKycData() {
                     <Typography variant="h5">Click here to enlarge</Typography>
                   </Button>
                 </Box> */}
-                <Box marginTop={2}>
+                {/* <Box marginTop={2}>
                   <Button
                     onClick={toggleConfirmModal}
                     color="error"
@@ -310,12 +320,12 @@ export default function UserKycData() {
                   >
                     Reject
                   </Button>
-                </Box>
+                </Box> */}
               </CardContent>
             </Card>
           </Box>
 
-          <Box width={isMobile ? "40%" : "100%"}>
+          <Box width={isNotMobile ? "35%" : "100%"}>
             <Card>
               <CardContent>
                 <Box display="flex" justifyContent="center" marginBottom={2}>
@@ -330,7 +340,9 @@ export default function UserKycData() {
                     <Typography color="grey" variant="h5">
                       Selfie Match:
                     </Typography>
-                    <Typography variant="h5">98%</Typography>
+                    <Typography variant="h5">
+                      {userKycData?.documentDetail?.FaceMatchData?.matchPercentWithPOAImage}%
+                      </Typography>
                   </Box>
 
                   <img
@@ -360,7 +372,7 @@ export default function UserKycData() {
                     <Typography variant="h5">Click here to enlarge</Typography>
                   </Button>
                 </Box>
-                <Box marginTop={2}>
+                {/* <Box marginTop={2}>
                   <Button
                     onClick={toggleConfirmModal}
                     color="error"
@@ -369,13 +381,13 @@ export default function UserKycData() {
                   >
                     Reject
                   </Button>
-                </Box>
+                </Box> */}
               </CardContent>
             </Card>
           </Box>
         </Box>
 
-        <Box width={isMobile ? "30%" : "100%"} border="1px solid grey">
+        <Box width={isNotMobile ? "30%" : "100%"} border="1px solid grey">
           <DataGrid
             sx={{
               ".MuiDataGrid-columnHeaderCheckbox": {
@@ -404,12 +416,24 @@ export default function UserKycData() {
         </Box>
       </Box>
 
-      <Box display="flex" justifyContent="center" marginTop={10}>
-        <Box width="50%">
-          <Button fullWidth variant="contained">
-            Failed
+      <Box 
+        display="flex" 
+        justifyContent="space-between"  
+        margin={"auto"} 
+        width={isNotMobile ? "18%" : "80%"} >
+          <Button 
+            color="error"
+            variant="contained"
+          >
+            Reject
           </Button>
-        </Box>
+          <Button
+            color="success"
+            variant="contained"  
+          >
+              Approve
+          </Button>
+        
       </Box>
 
       <Modal onClose={toggleConfirmModal} open={confirmModalOpen}>

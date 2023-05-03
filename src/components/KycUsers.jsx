@@ -196,7 +196,8 @@ export default function KycUsers() {
           <>
             <ShowButton
               onClick={() => {
-                navigate(`/kycData/${params.id}`);
+                console.log(params);
+                navigate(`/kycData/${params.id}`,{state: {email: params?.row?.email, phone: params?.row?.phone}});
               }}
             >
               View
