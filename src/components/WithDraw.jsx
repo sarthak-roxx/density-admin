@@ -1,16 +1,17 @@
-/* eslint-disable no-unused-vars */
+/* eslint-disable */
 import { DataGrid } from "@mui/x-data-grid";
 import { styled } from "@mui/material/styles";
 import {
   Box,
   Button,
+  Modal,
   Paper,
   ToggleButton,
   ToggleButtonGroup,
   Typography,
 } from "@mui/material";
 import DownloadIcon from "@mui/icons-material/Download";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { makeGetReq, makePostReq } from "../utils/axiosHelper";
 import { useSessionContext } from "supertokens-auth-react/recipe/session";
 
@@ -58,43 +59,89 @@ const RejectButton = styled(Button)(({ theme }) => ({
   border: "1px solid red",
 }));
 
-// const getUsersAccountDetails = async () => {
-//   const data = await makeGetReq(
-//     "v1/bank-accounts?userID=1bdc3aca-76dc-47c8-8e49-c071bad768e2"
-//   );
-//   console.log(data);
-// };
-// const getUsersAccountDetails = async () => {
-//   const data = await makeGetReq("v1/fiat/query-fiat-transaction");
-//   console.log(data);
-// };
+const style = {
+  position: "absolute",
+  top: "50%",
+  left: "50%",
+  transform: "translate(-50%, -50%)",
+  width: "90%",
+  height: "70%",
+  bgcolor: "background.paper",
+  border: "2px solid #000",
+  borderRadius: "5px",
+  boxShadow: 24,
+  p: 4,
+};
 
-// const approveTransaction = async () => {
-//   const { data } = await makeGetReq(
-//     "v1/users/00be7f4c-d485-4c8f-a911-80925202007b/kyc?userID=00be7f4c-d485-4c8f-a911-80925202007b"
-//   );
-//   console.log(data);
-// };
+const messageModalStyles = {
+  position: "absolute",
+  top: "15%",
+  left: "50%",
+  transform: "translate(-50%, -50%)",
+  width: "20%",
+  height: "20%",
+  bgcolor: "#101010",
+  border: "2px solid #000",
+  borderRadius: "5px",
+  boxShadow: 24,
+  p: 4,
+};
 
 export default function WithDraw() {
   const { userId: adminID } = useSessionContext();
+
+  const [template, setTemplate] = useState("");
 
   const [message, setMessage] = useState("");
   const [messageModal, setMessageModal] = useState(false);
   const toggleMessageModal = () => setMessageModal(!messageModal);
 
-  const [fiatTraxns, setFiatTraxns] = useState([]);
-
-  const [filterByKycStatus, setFilterByKycStatus] = useState("");
   const [fiatTraxnHistoryRows, setFiatTraxnHistoryRows] = useState([]);
 
+  const [paginationModal, setPaginationModal] = useState({
+    page: 0,
+    pageSize: 5,
+  });
+  const [totalRows, setTotalRows] = useState(0);
+  const [depositRows, setDepositRows] = useState([]);
+  const [depositPaginationModal, setDepositPaginationModal] = useState({
+    page: 0,
+    pageSize: 5,
+  });
+
+  const [totalDepositLogRows, setTotalDepositLogRows] = useState(0);
+
+  const [fiatTraxns, setFiatTraxns] = useState([]);
   const [transactionHistoryModal, setTransactionHistoryModal] = useState(false);
   const toggleViewTransactionModal = () =>
     setTransactionHistoryModal(!transactionHistoryModal);
 
-  const handleAlignment = (event, newAlignment) => {
-    setFilterByKycStatus(newAlignment);
+  const handleAlignment = async (event, newAlignment) => {
+    setTemplate(newAlignment);
+    // setPaginationModal(paginationModal => ({ page: 1, pageSize : paginationModal.pageSize}))
   };
+
+  const depositLogs = [
+    {
+      field: "timestamp",
+      headerClassName: "kyc-column-header",
+      headerName: "Timestamp",
+      width: 250,
+    },
+    {
+      field: "action",
+      headerClassName: "kyc-column-header",
+      headerName: "Action",
+      width: 250,
+    },
+    {
+      field: "admin",
+      headerClassName: "kyc-column-header",
+      headerName: "Admin",
+      width: 300,
+    },
+  ];
+
   const withdrawColumns = [
     {
       field: "date",
@@ -106,7 +153,7 @@ export default function WithDraw() {
       field: "time",
       headerName: "Time",
       headerClassName: "kyc-column-header",
-      width: 200,
+      width: 150,
     },
     {
       field: "userName",
@@ -126,7 +173,7 @@ export default function WithDraw() {
       cellClassName: "kyc-row-style",
       headerName: "Bank Account No",
       headerClassName: "kyc-column-header",
-      width: 150,
+      width: 250,
     },
     {
       field: "withdrawAmount",
@@ -147,7 +194,7 @@ export default function WithDraw() {
       headerName: "Withdraw Status",
       cellClassName: "kyc-row-style",
       headerClassName: "kyc-column-header",
-      widht: 200,
+      width: 150,
     },
     {
       field: "viewDetails",
@@ -175,19 +222,18 @@ export default function WithDraw() {
       headerClassName: "kyc-column-header",
       width: 100,
       renderCell: (params) => {
-        // console.log(params.row.RefID);
-        // console.log(params.row.FiatTxnID);
-        // console.log(params.row.UserID);
         return (
           <>
             <ApproveButton
-              onClick={() => {
+              disabled={params.row.depositStatus == "SUCCESS"}
+              onClick={async () => {
                 processTraxn(
                   params.row.UserID,
                   "approve",
                   params.row.RefID,
                   params.row.FiatTxnID
                 );
+                await fetchAllLogs();
               }}
             >
               Approve
@@ -205,13 +251,15 @@ export default function WithDraw() {
         return (
           <>
             <RejectButton
-              onClick={() => {
+              disabled={params.row.depositStatus == "SUCCESS"}
+              onClick={async () => {
                 processTraxn(
                   params.row.UserID,
                   "reject",
                   params.row.RefID,
                   params.row.FiatTxnID
                 );
+                await fetchAllLogs();
               }}
             >
               Reject
@@ -222,33 +270,96 @@ export default function WithDraw() {
     },
   ];
 
-  const getListOfFiatTraxn = async () => {
-    const { data } = await makeGetReq(
-      "v1/fiat/query-fiat-transaction?type=INR_WITHDRAWL"
-    );
-    console.log(data);
+  const transactionColumns = [
+    {
+      field: "date",
+      headerClassName: "kyc-column-header",
+      headerName: "Date",
+      width: 200,
+    },
+    {
+      field: "time",
+      headerClassName: "kyc-column-header",
+      headerName: "Time",
+      width: 100,
+    },
+    {
+      field: "RefID",
+      headerClassName: "kyc-column-header",
+      headerName: "Reference ID",
+      width: 300,
+    },
+    {
+      field: "withdrawlAmount",
+      headerClassName: "kyc-column-header",
+      headerName: "Amount",
+      width: 200,
+    },
+    {
+      field: "withdrawlStatus",
+      headerClassName: "kyc-column-header",
+      headerName: "Status",
+      width: 100,
+    },
+  ];
 
-    const rows = data.map((traxn) => ({
-      id: traxn.id,
-      userName:
-        traxn.userFirstName && traxn.userLastName
-          ? traxn.userFirstName + " " + traxn.userLastName
-          : "---",
-      depositAmount: traxn.amount,
-      depositStatus: traxn.fiatTransactionStatus,
-      bankAccNo: traxn.userBankAccount,
-      email: traxn.userEmail,
-      date: new Date(traxn.createdAt).toLocaleDateString(),
-      time: new Date(traxn.createdAt).toLocaleTimeString(),
-      FiatTxnID: traxn.txnID,
-      RefID: traxn.txnRefID,
-      UserID: traxn.userID,
-    }));
-    setFiatTraxns(rows);
+  const changePagination = (event) => {
+    console.log(event);
+    setPaginationModal({ page: event.page, pageSize: event.pageSize });
   };
+
+  const changePaginationLogs = (event) => {
+    setDepositPaginationModal({ page: event.page, pageSize: event.pageSize });
+  };
+
+  const fetchAllFiatTxn = useCallback(async () => {
+    const { data, total } = await makeGetReq(
+      `v1/fiat/query-fiat-transaction?type=INR_WITHDRAWL&size=${
+        paginationModal.pageSize
+      }&start=${paginationModal.page * paginationModal.pageSize}`
+    );
+    const rows = data
+      .map((traxn) => ({
+        id: traxn.id,
+        userName:
+          traxn.userFirstName && traxn.userLastName
+            ? traxn.userFirstName + " " + traxn.userLastName
+            : "---",
+        depositAmount: traxn.amount,
+        depositStatus: traxn.fiatTransactionStatus,
+        bankAccNo: traxn.userBankAccount,
+        email: traxn.userEmail,
+        date: new Date(traxn.createdAt).toLocaleDateString(),
+        time: new Date(traxn.createdAt).toLocaleTimeString(),
+        FiatTxnID: traxn.txnID,
+        RefID: traxn.txnRefID,
+        UserID: traxn.userID,
+      }))
+      .filter((traxn) => traxn.depositStatus !== "FAILED");
+
+    setFiatTraxns(rows);
+    setTotalRows(total);
+  }, [paginationModal.page, paginationModal.pageSize]);
+
+  const fetchAllLogs = useCallback(async () => {
+    const { data, total } = await makeGetReq(
+      `v1/admin-logs?actionType=FIAT&size=${
+        depositPaginationModal.pageSize
+      }&pageNo=${depositPaginationModal.page + 1}`
+    );
+    const rows = data.map((log) => ({
+      id: log.logID,
+      admin: log.adminName,
+      timestamp: new Date(log.createdAt).toLocaleDateString(),
+      action: log.actionRemark,
+    }));
+    setDepositRows(rows);
+    setTotalDepositLogRows(total);
+  }, [depositPaginationModal.page, depositPaginationModal.pageSize]);
+
   const getFiatTraxnById = async (userId) => {
     const { data } = await makeGetReq(
-      `v1/fiat/query-fiat-transaction?userID=${userId}&type=INR_WITHDRAW`
+      `v1/fiat/query-fiat-transaction?userID=${userId}&type=INR_WITHDRAWL`
     );
     const rows = data.map((traxn) => ({
       id: traxn.id,
@@ -287,8 +398,9 @@ export default function WithDraw() {
   };
 
   useEffect(() => {
-    getListOfFiatTraxn();
-  }, []);
+    fetchAllLogs();
+    fetchAllFiatTxn();
+  }, [fetchAllFiatTxn, fetchAllLogs]);
   return (
     <>
       <Box display="flex" justifyContent="center">
@@ -307,7 +419,7 @@ export default function WithDraw() {
           >
             <StyledToggleButtonGroup
               size="small"
-              value={filterByKycStatus}
+              value={template}
               exclusive
               onChange={handleAlignment}
             >
@@ -340,21 +452,91 @@ export default function WithDraw() {
             "&.MuiDataGrid-root .MuiDataGrid-cell:focus-within": {
               outline: "none !important",
             },
+            border: 2,
           }}
-          rows={[]}
+          rows={fiatTraxns}
           columns={withdrawColumns}
-          initialState={{
-            pagination: {
-              paginationModel: {
-                pageSize: 10,
-              },
-            },
-          }}
-          pageSizeOptions={[10]}
+          paginationModel={paginationModal}
+          rowCount={totalRows}
+          pageSizeOptions={[5, 10]}
+          paginationMode="server"
+          onPaginationModelChange={changePagination}
           checkboxSelection
           disableRowSelectionOnClick
+          isRowSelectable={() => false}
         />
       </Box>
+
+      <Box display="flex" justifyContent="center">
+        <Typography variant="h1">Withdraw Logs</Typography>
+      </Box>
+      <Box display="flex" justifyContent="center">
+        <Box sx={{ height: 650, width: "60%", p: 1 }}>
+          <DataGrid
+            sx={{
+              ".MuiDataGrid-columnHeaderCheckbox": {
+                display: "none",
+              },
+              "& .MuiDataGrid-cellCheckbox": {
+                display: "none",
+              },
+              "&.MuiDataGrid-root .MuiDataGrid-cell:focus-within": {
+                outline: "none !important",
+              },
+              border: 2,
+            }}
+            rows={depositRows}
+            columns={depositLogs}
+            paginationModel={depositPaginationModal}
+            rowCount={totalDepositLogRows}
+            paginationMode="server"
+            pageSizeOptions={[5, 10]}
+            onPaginationModelChange={changePaginationLogs}
+            checkboxSelection
+            disableRowSelectionOnClick
+            isRowSelectable={() => false}
+          />
+        </Box>
+      </Box>
+
+      <Modal
+        open={transactionHistoryModal}
+        onClose={toggleViewTransactionModal}
+      >
+        <Box sx={style}>
+          <DataGrid
+            sx={{
+              ".MuiDataGrid-columnHeaderCheckbox": {
+                display: "none",
+              },
+              "& .MuiDataGrid-cellCheckbox": {
+                display: "none",
+              },
+            }}
+            rows={fiatTraxnHistoryRows}
+            columns={transactionColumns}
+            initialState={{
+              pagination: {
+                paginationModel: {
+                  pageSize: 10,
+                },
+              },
+            }}
+            pageSizeOptions={[10]}
+            checkboxSelection
+            disableRowSelectionOnClick
+            isRowSelectable={() => false}
+          />
+        </Box>
+      </Modal>
+
+      <Modal open={messageModal} onClose={toggleMessageModal}>
+        <Box sx={messageModalStyles}>
+          <Typography variant="h3" color="#ebff25">
+            {message}
+          </Typography>
+        </Box>
+      </Modal>
     </>
   );
 }
