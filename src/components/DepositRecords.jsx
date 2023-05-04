@@ -1,12 +1,13 @@
 /* eslint-disable no-unused-vars */
-import React, { useEffect, useState } from "react";
-import { Box, Button, Modal, Typography } from "@mui/material";
+import React, { useCallback, useEffect, useState } from "react";
+import { Box, Button, Modal, TextField, Typography } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import { styled } from "@mui/material/styles";
 // import axiosInstance from "../utils/axiosHelper";
 import { useDispatch } from "react-redux";
 import { fetchUsers } from "../redux/kyc/users.slice";
 import { makeGetReq, makePatchReq, makePostReq } from "../utils/axiosHelper";
+import { useSessionContext } from "supertokens-auth-react/recipe/session";
 
 const ViewButton = styled(Button)(({ theme }) => ({
   backgroundColor: "lightblue",
@@ -54,12 +55,24 @@ const messageModalStyles = {
 
 export default function DepositRecords() {
   const dispatch = useDispatch();
+  const { userId: adminID } = useSessionContext();
+
+  const [remark, setRemark] = useState("");
+
+  const [remarkModal, setRemarkModal] = useState(false);
+  const toggleRemarkModal = () => setRemarkModal(!remarkModal);
 
   const [message, setMessage] = useState("");
   const [messageModal, setMessageModal] = useState(false);
   const toggleMessageModal = () => setMessageModal(!messageModal);
 
   const [fiatTraxnHistoryRows, setFiatTraxnHistoryRows] = useState([]);
+
+  const [paginationModal, setPaginationModal] = useState({
+    page: 0,
+    pageSize: 5,
+  });
+  const [totalRows, setTotalRows] = useState(0);
 
   const [fiatTraxns, setFiatTraxns] = useState([]);
   const [transactionHistoryModal, setTransactionHistoryModal] = useState(false);
@@ -290,37 +303,45 @@ export default function DepositRecords() {
     },
   ];
 
-  const getuser = async () => {
-    const data = await makeGetReq(
-      "/v1/users/faa77344-2620-44e3-bc5e-bf39a379def4/kyc"
-    );
-    console.log(data);
+  const changePagination = (event) => {
+    console.log(event);
+    setPaginationModal({ page: event.page, pageSize: event.pageSize });
   };
 
-  const getListOfFiatTraxn = async () => {
-    const { data } = await makeGetReq(
-      "v1/fiat/query-fiat-transaction?type=INR_DEPOSIT"
+  const fetchAllFiatTxn = useCallback(async () => {
+    const { data, total } = await makeGetReq(
+      `v1/fiat/query-fiat-transaction?&size=${paginationModal.pageSize}&start=${
+        paginationModal.page * paginationModal.pageSize
+      }`
     );
-    // console.log(data);
-
-    const rows = data.map((traxn) => ({
-      id: traxn.id,
-      userName:
-        traxn.userFirstName && traxn.userLastName
-          ? traxn.userFirstName + " " + traxn.userLastName
-          : "---",
-      depositAmount: traxn.amount,
-      depositStatus: traxn.fiatTransactionStatus,
-      bankAccNo: traxn.userBankAccount,
-      email: traxn.userEmail,
-      date: new Date(traxn.createdAt).toLocaleDateString(),
-      time: new Date(traxn.createdAt).toLocaleTimeString(),
-      FiatTxnID: traxn.txnID,
-      RefID: traxn.txnRefID,
-      UserID: traxn.userID,
-    }));
+    const rows = data
+      .map((traxn) => ({
+        id: traxn.id,
+        userName:
+          traxn.userFirstName && traxn.userLastName
+            ? traxn.userFirstName + " " + traxn.userLastName
+            : "---",
+        depositAmount: traxn.amount,
+        depositStatus: traxn.fiatTransactionStatus,
+        bankAccNo: traxn.userBankAccount,
+        email: traxn.userEmail,
+        date: new Date(traxn.createdAt).toLocaleDateString(),
+        time: new Date(traxn.createdAt).toLocaleTimeString(),
+        FiatTxnID: traxn.txnID,
+        RefID: traxn.txnRefID,
+        UserID: traxn.userID,
+      }))
+      .filter((traxn) => traxn.depositStatus !== "FAILED");
 
     setFiatTraxns(rows);
+    setTotalRows(total);
+  }, [paginationModal.page, paginationModal.pageSize]);
+
+  const fetchAllLogs = async () => {
+    const { data } = await makeGetReq(
+      `v1/admin-logs?actionType=FIAT&adminID=${adminID}`
+    );
+    console.log(data);
   };
 
   const getFiatTraxnById = async (userId) => {
@@ -356,17 +377,19 @@ export default function DepositRecords() {
       );
       toggleMessageModal();
       setMessage(`Transaction completed with an action ${action}`);
-      await getListOfFiatTraxn();
+      await fetchAllFiatTxn();
     } catch (err) {
       toggleMessageModal();
       setMessage(err.response.data.ErrorMessage);
-      await getListOfFiatTraxn();
+      await fetchAllFiatTxn();
     }
   };
 
   useEffect(() => {
-    getListOfFiatTraxn();
-  }, []);
+    // getListOfFiatTraxn();
+    fetchAllLogs();
+    fetchAllFiatTxn();
+  }, [fetchAllFiatTxn]);
   return (
     <>
       <Box display="flex" justifyContent="center">
@@ -387,14 +410,11 @@ export default function DepositRecords() {
           }}
           rows={fiatTraxns}
           columns={columns}
-          initialState={{
-            pagination: {
-              paginationModel: {
-                pageSize: 10,
-              },
-            },
-          }}
-          pageSizeOptions={[10]}
+          paginationModel={paginationModal}
+          rowCount={totalRows}
+          pageSizeOptions={[5, 10]}
+          paginationMode="server"
+          onPaginationModelChange={changePagination}
           checkboxSelection
           disableRowSelectionOnClick
           isRowSelectable={() => false}
@@ -467,6 +487,12 @@ export default function DepositRecords() {
           <Typography variant="h3" color="#ebff25">
             {message}
           </Typography>
+        </Box>
+      </Modal>
+
+      <Modal open={remarkModal} onClose={toggleRemarkModal}>
+        <Box sx={messageModalStyles}>
+          <TextField />
         </Box>
       </Modal>
     </>
