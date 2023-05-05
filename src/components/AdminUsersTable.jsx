@@ -332,6 +332,7 @@ export default function AdminUsersTable() {
               "&.MuiDataGrid-root .MuiDataGrid-cell:focus-within": {
                 outline: "none !important",
               },
+              border: 2,
             }}
             rows={adminRows}
             columns={adminColumns}

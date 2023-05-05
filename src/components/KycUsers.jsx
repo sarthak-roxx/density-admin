@@ -433,6 +433,7 @@ export default function KycUsers() {
               "&.MuiDataGrid-root .MuiDataGrid-cell:focus-within": {
                 outline: "none !important",
               },
+              border: 2,
             }}
             rows={[...userRows]}
             columns={usersColumns}
@@ -450,7 +451,22 @@ export default function KycUsers() {
           <Typography variant="h2">KYC Logs</Typography>
         </Box>
         <Box sx={{ p: 2, height: 650, width: "100%" }}>
-          <DataGrid columns={kycLogsColumns} rows={[]} />
+          <DataGrid
+            columns={kycLogsColumns}
+            rows={[]}
+            sx={{
+              ".MuiDataGrid-columnHeaderCheckbox": {
+                display: "none",
+              },
+              "& .MuiDataGrid-cellCheckbox": {
+                display: "none",
+              },
+              "&.MuiDataGrid-root .MuiDataGrid-cell:focus-within": {
+                outline: "none !important",
+              },
+              border: 2,
+            }}
+          />
         </Box>
 
         <Modal open={bankModal} onClose={toggleBankModal}>

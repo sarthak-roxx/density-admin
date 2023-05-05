@@ -8,6 +8,11 @@ import { useDispatch } from "react-redux";
 import { fetchUsers } from "../redux/kyc/users.slice";
 import { makeGetReq, makePatchReq, makePostReq } from "../utils/axiosHelper";
 import { useSessionContext } from "supertokens-auth-react/recipe/session";
+import { DemoContainer } from "@mui/x-date-pickers/internals/demo";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import dayjs from "dayjs";
 
 const ViewButton = styled(Button)(({ theme }) => ({
   backgroundColor: "lightblue",
@@ -38,6 +43,19 @@ const style = {
   boxShadow: 24,
   p: 4,
 };
+const csvModalStyle = {
+  position: "absolute",
+  top: "40%",
+  left: "50%",
+  transform: "translate(-50%, -50%)",
+  width: "30%",
+  height: "80%",
+  bgcolor: "background.paper",
+  border: "2px solid #000",
+  borderRadius: "5px",
+  boxShadow: 24,
+  p: 4,
+};
 
 const messageModalStyles = {
   position: "absolute",
@@ -54,15 +72,25 @@ const messageModalStyles = {
 };
 
 export default function DepositRecords() {
-  const dispatch = useDispatch();
-  const { userId: adminID } = useSessionContext();
-
-  const [remark, setRemark] = useState("");
-
-  const [remarkModal, setRemarkModal] = useState(false);
-  const toggleRemarkModal = () => setRemarkModal(!remarkModal);
+  // const { userId: adminID } = useSessionContext();
 
   const [message, setMessage] = useState("");
+
+  const [csvFormData, setCsvFormData] = useState({
+    traxnId: "",
+    userId: "",
+    status: "",
+    // startTime: dayjs(new Date().toLocaleDateString())
+    //   .toDate()
+    //   .toLocaleDateString(),
+    // endTime: dayjs(new Date().toLocaleDateString())
+    //   .toDate()
+    //   .toLocaleDateString(),
+  });
+
+  const [queryCsvModal, setQueryCsvModal] = useState(false);
+  const toggleQueryCsvModal = () => setQueryCsvModal(!queryCsvModal);
+
   const [messageModal, setMessageModal] = useState(false);
   const toggleMessageModal = () => setMessageModal(!messageModal);
 
@@ -73,6 +101,13 @@ export default function DepositRecords() {
     pageSize: 5,
   });
   const [totalRows, setTotalRows] = useState(0);
+  const [depositRows, setDepositRows] = useState([]);
+  const [depositPaginationModal, setDepositPaginationModal] = useState({
+    page: 0,
+    pageSize: 5,
+  });
+
+  const [totalDepositLogRows, setTotalDepositLogRows] = useState(0);
 
   const [fiatTraxns, setFiatTraxns] = useState([]);
   const [transactionHistoryModal, setTransactionHistoryModal] = useState(false);
@@ -84,19 +119,19 @@ export default function DepositRecords() {
       field: "timestamp",
       headerClassName: "kyc-column-header",
       headerName: "Timestamp",
-      width: 200,
+      width: 250,
     },
     {
       field: "action",
       headerClassName: "kyc-column-header",
       headerName: "Action",
-      width: 200,
+      width: 250,
     },
     {
       field: "admin",
       headerClassName: "kyc-column-header",
       headerName: "Admin",
-      width: 200,
+      width: 300,
     },
   ];
 
@@ -180,19 +215,18 @@ export default function DepositRecords() {
       headerClassName: "kyc-column-header",
       width: 100,
       renderCell: (params) => {
-        // console.log(params.row.RefID);
-        // console.log(params.row.FiatTxnID);
-        // console.log(params.row.UserID);
         return (
           <>
             <ApproveButton
-              onClick={() => {
+              disabled={params.row.depositStatus == "SUCCESS"}
+              onClick={async () => {
                 processTraxn(
                   params.row.UserID,
                   "approve",
                   params.row.RefID,
                   params.row.FiatTxnID
                 );
+                await fetchAllLogs();
               }}
             >
               Approve
@@ -210,13 +244,15 @@ export default function DepositRecords() {
         return (
           <>
             <RejectButton
-              onClick={() => {
-                processTraxn(
+              disabled={params.row.depositStatus == "SUCCESS"}
+              onClick={async () => {
+                await processTraxn(
                   params.row.UserID,
                   "reject",
                   params.row.RefID,
                   params.row.FiatTxnID
                 );
+                await fetchAllLogs();
               }}
             >
               Reject
@@ -224,45 +260,6 @@ export default function DepositRecords() {
           </>
         );
       },
-    },
-  ];
-
-  const transactionRows = [
-    {
-      id: 1,
-      date: "24/01/2022",
-      time: "1:33:18PM",
-      amount: "-0.8774",
-      transactionType: "USDT BUY",
-      status: "verified",
-      referenceId: "1f78669f-27b0-4430-8303",
-    },
-    {
-      id: 2,
-      date: "15/03/2022",
-      time: "12:33:18PM",
-      amount: "-0.8774",
-      transactionType: "USDT SELL",
-      status: "verified",
-      referenceId: "1f78669f-27b0-4430-8303",
-    },
-    {
-      id: 3,
-      date: "14/11/2022",
-      time: "4:18:18PM",
-      amount: "-0.8774",
-      transactionType: "INR DEPOSIT",
-      status: "verified",
-      referenceId: "1f78669f-27b0-4430-8303",
-    },
-    {
-      id: 4,
-      date: "14/08/2022",
-      time: "09:18:18PM",
-      amount: "-0.8774",
-      transactionType: "USDT BUY",
-      status: "verified",
-      referenceId: "1f78669f-27b0-4430-8303",
     },
   ];
   const transactionColumns = [
@@ -290,11 +287,6 @@ export default function DepositRecords() {
       headerName: "Amount",
       width: 200,
     },
-    // {
-    //   field: "transactionType",
-    //   headerName: "Transaction Type",
-    //   width: 150,
-    // },
     {
       field: "depositStatus",
       headerClassName: "kyc-column-header",
@@ -308,12 +300,17 @@ export default function DepositRecords() {
     setPaginationModal({ page: event.page, pageSize: event.pageSize });
   };
 
+  const changePaginationLogs = (event) => {
+    setDepositPaginationModal({ page: event.page, pageSize: event.pageSize });
+  };
+
   const fetchAllFiatTxn = useCallback(async () => {
     const { data, total } = await makeGetReq(
-      `v1/fiat/query-fiat-transaction?&size=${paginationModal.pageSize}&start=${
-        paginationModal.page * paginationModal.pageSize
-      }`
+      `v1/fiat/query-fiat-transaction?type=INR_DEPOSIT&size=${
+        paginationModal.pageSize
+      }&start=${paginationModal.page * paginationModal.pageSize}`
     );
+    // console.log(total);
     const rows = data
       .map((traxn) => ({
         id: traxn.id,
@@ -337,12 +334,21 @@ export default function DepositRecords() {
     setTotalRows(total);
   }, [paginationModal.page, paginationModal.pageSize]);
 
-  const fetchAllLogs = async () => {
-    const { data } = await makeGetReq(
-      `v1/admin-logs?actionType=FIAT&adminID=${adminID}`
+  const fetchAllLogs = useCallback(async () => {
+    const { data, total } = await makeGetReq(
+      `v1/admin-logs?actionType=FIAT&size=${
+        depositPaginationModal.pageSize
+      }&pageNo=${depositPaginationModal.page + 1}`
     );
-    console.log(data);
-  };
+    const rows = data.map((log) => ({
+      id: log.logID,
+      admin: log.adminName,
+      timestamp: new Date(log.createdAt).toLocaleDateString(),
+      action: log.actionRemark,
+    }));
+    setDepositRows(rows);
+    setTotalDepositLogRows(total);
+  }, [depositPaginationModal.page, depositPaginationModal.pageSize]);
 
   const getFiatTraxnById = async (userId) => {
     const { data } = await makeGetReq(
@@ -386,16 +392,22 @@ export default function DepositRecords() {
   };
 
   useEffect(() => {
-    // getListOfFiatTraxn();
     fetchAllLogs();
     fetchAllFiatTxn();
-  }, [fetchAllFiatTxn]);
+  }, [fetchAllFiatTxn, fetchAllLogs]);
   return (
     <>
-      <Box display="flex" justifyContent="center">
-        <Typography variant="h1">Deposit Records</Typography>
+      <Box mt={1} display="flex">
+        <Box width="55%" display="flex" justifyContent="flex-end">
+          <Typography variant="h1">Deposit Records</Typography>
+        </Box>
+        <Box width="45%" display="flex" justifyContent="flex-end">
+          <Button onClick={toggleQueryCsvModal} variant="contained">
+            Download deposit records
+          </Button>
+        </Box>
       </Box>
-      <Box sx={{ height: 500, width: "100%", p: 1 }}>
+      <Box sx={{ height: 620, width: "100%", p: 1 }}>
         <DataGrid
           sx={{
             ".MuiDataGrid-columnHeaderCheckbox": {
@@ -407,6 +419,7 @@ export default function DepositRecords() {
             "&.MuiDataGrid-root .MuiDataGrid-cell:focus-within": {
               outline: "none !important",
             },
+            border: 2,
           }}
           rows={fiatTraxns}
           columns={columns}
@@ -421,7 +434,10 @@ export default function DepositRecords() {
         />
       </Box>
       <Box display="flex" justifyContent="center">
-        <Box sx={{ height: 500, width: "50%", p: 1 }}>
+        <Typography variant="h1">Deposit Logs</Typography>
+      </Box>
+      <Box display="flex" justifyContent="center">
+        <Box sx={{ height: 650, width: "60%", p: 1 }}>
           <DataGrid
             sx={{
               ".MuiDataGrid-columnHeaderCheckbox": {
@@ -433,17 +449,15 @@ export default function DepositRecords() {
               "&.MuiDataGrid-root .MuiDataGrid-cell:focus-within": {
                 outline: "none !important",
               },
+              border: 2,
             }}
-            rows={[]}
+            rows={depositRows}
             columns={depositLogs}
-            initialState={{
-              pagination: {
-                paginationModel: {
-                  pageSize: 10,
-                },
-              },
-            }}
-            pageSizeOptions={[10]}
+            paginationModel={depositPaginationModal}
+            rowCount={totalDepositLogRows}
+            paginationMode="server"
+            pageSizeOptions={[5, 10]}
+            onPaginationModelChange={changePaginationLogs}
             checkboxSelection
             disableRowSelectionOnClick
             isRowSelectable={() => false}
@@ -490,9 +504,42 @@ export default function DepositRecords() {
         </Box>
       </Modal>
 
-      <Modal open={remarkModal} onClose={toggleRemarkModal}>
-        <Box sx={messageModalStyles}>
-          <TextField />
+      <Modal open={queryCsvModal} onClose={toggleQueryCsvModal}>
+        <Box sx={csvModalStyle}>
+          <TextField fullWidth label="Enter traxn id" />
+          <TextField sx={{ mt: 2 }} fullWidth label="Enter User id" />
+          <TextField sx={{ mt: 2 }} fullWidth label="status" />
+          {/* <TextField sx={{ mt: 2 }} fullWidth label="startTime" /> */}
+          <Box>
+            <LocalizationProvider dateAdapter={AdapterDayjs}>
+              <DemoContainer components={["DatePicker"]}>
+                <DatePicker
+                  label="Enter start time"
+                  value={csvFormData.startTime}
+                  onChange={(newDate) =>
+                    setCsvFormData({ ...csvFormData, startTime: newDate })
+                  }
+                />
+              </DemoContainer>
+            </LocalizationProvider>
+          </Box>
+          <Box>
+            <LocalizationProvider dateAdapter={AdapterDayjs}>
+              <DemoContainer components={["DatePicker"]}>
+                <DatePicker
+                  label="Enter end time"
+                  value={csvFormData.startTime}
+                  onChange={(newDate) =>
+                    setCsvFormData({ ...csvFormData, startTime: newDate })
+                  }
+                />
+              </DemoContainer>
+            </LocalizationProvider>
+          </Box>
+          <TextField sx={{ mt: 2 }} fullWidth label="size" />
+          <Box sx={{ mt: 2 }} display="flex" justifyContent="flex-end">
+            <Button variant="contained">Download</Button>
+          </Box>
         </Box>
       </Modal>
     </>
