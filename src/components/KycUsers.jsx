@@ -148,7 +148,7 @@ export default function KycUsers() {
   const [bankModal, setBankModal] = useState(false);
   const [paginationModal, setPaginationModal] = useState({
     page: 0,
-    pageSize: 5
+    pageSize: 5,
   });
   const [totalRows, setTotalRows] = useState(0);
   const toggleBankModal = () => setBankModal(!bankModal);
@@ -280,7 +280,12 @@ export default function KycUsers() {
             <ShowButton
               onClick={() => {
                 console.log(params);
-                navigate(`/kycData/${params.id}`,{state: {email: params?.row?.email, phone: params?.row?.phone}});
+                navigate(`/kycData/${params.id}`, {
+                  state: {
+                    email: params?.row?.email,
+                    phone: params?.row?.phone,
+                  },
+                });
               }}
             >
               View
@@ -335,17 +340,21 @@ export default function KycUsers() {
       },
     },
   ];
-  const changePagination = (event) =>{
+  const changePagination = (event) => {
     console.log(event);
-    setPaginationModal({ page: event.page , pageSize : event.pageSize});
-  }
+    setPaginationModal({ page: event.page, pageSize: event.pageSize });
+  };
   const handleAlignment = async (event, newAlignment) => {
     setFilterByKycStatus(newAlignment);
-    // setPaginationModal(paginationModal => ({ page: 1, pageSize : paginationModal.pageSize})) 
-  }
+    // setPaginationModal(paginationModal => ({ page: 1, pageSize : paginationModal.pageSize}))
+  };
   const fetchAllUsers = useCallback(async () => {
     // const data = await makeGetReq("/v1/kyc/query-kyc?status=FAILED");
-    const { data, total } = await makeGetReq(`/v1/kyc/query-kyc?status=${filterByKycStatus}&pageSize=${paginationModal.pageSize}&pageNo=${paginationModal.page+1}`);
+    const { data, total } = await makeGetReq(
+      `/v1/kyc/query-kyc?status=${filterByKycStatus}&pageSize=${
+        paginationModal.pageSize
+      }&pageNo=${paginationModal.page + 1}`
+    );
     const rows = data.map((user) => ({
       id: user.id,
       createdOn: user.created,
@@ -364,7 +373,6 @@ export default function KycUsers() {
     fetchAllUsers();
   }, [fetchAllUsers]);
 
-  console.log("user rows", userRows);
   return (
     <>
       <BrowserView>
@@ -410,14 +418,6 @@ export default function KycUsers() {
             <Button onClick={() => dispatch(resetFilter())} variant="contained">
               Reset filter
             </Button>
-            <Box display="flex" justifyContent="flex-end">
-              <Button
-                variant="contained"
-                onClick={() => setShowLogs(!showLogs)}
-              >
-                Show All KYC logs
-              </Button>
-            </Box>
           </Box>
         </Box>
 
@@ -438,7 +438,7 @@ export default function KycUsers() {
             columns={usersColumns}
             paginationModel={paginationModal}
             rowCount={totalRows}
-            pageSizeOptions={[5,10]}
+            pageSizeOptions={[5, 10]}
             paginationMode="server"
             onPaginationModelChange={changePagination}
             checkboxSelection
@@ -484,30 +484,6 @@ export default function KycUsers() {
       </BrowserView>
 
       <MobileView>
-        {/* <Accordion>
-          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-            <Typography variant="h3">jon.doe@gmail.com</Typography>
-          </AccordionSummary>
-          <AccordionDetails>
-            <Typography>
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-              Suspendisse malesuada lacus ex, sit amet blandit leo lobortis
-              eget.
-            </Typography>
-          </AccordionDetails>
-        </Accordion>
-        <Accordion>
-          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-            <Typography variant="h3">jane.doe@gmail.com</Typography>
-          </AccordionSummary>
-          <AccordionDetails>
-            <Typography>
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-              Suspendisse malesuada lacus ex, sit amet blandit leo lobortis
-              eget.
-            </Typography>
-          </AccordionDetails>
-        </Accordion> */}
         <Box mt={2} mx={1}>
           <Box mb={1}>
             <TextField
