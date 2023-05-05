@@ -26,6 +26,7 @@ export default function AppRouter() {
                 path={route.path}
                 // element={route.component}
                 element={<SessionAuth>{route.component}</SessionAuth>}
+                // element={route.component}
                 key={idx}
                 exact={true}
               />

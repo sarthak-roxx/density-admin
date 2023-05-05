@@ -172,6 +172,7 @@ export default function RewardScreen() {
               "&.MuiDataGrid-root .MuiDataGrid-cell:focus-within": {
                 outline: "none !important",
               },
+              border: 2,
             }}
             rows={[]}
             columns={historyColumns}

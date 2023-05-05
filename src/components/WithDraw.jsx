@@ -6,6 +6,7 @@ import {
   Button,
   Modal,
   Paper,
+  TextField,
   ToggleButton,
   ToggleButtonGroup,
   Typography,
@@ -14,6 +15,11 @@ import DownloadIcon from "@mui/icons-material/Download";
 import React, { useCallback, useEffect, useState } from "react";
 import { makeGetReq, makePostReq } from "../utils/axiosHelper";
 import { useSessionContext } from "supertokens-auth-react/recipe/session";
+import { DemoContainer } from "@mui/x-date-pickers/internals/demo";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import dayjs from "dayjs";
 
 const ShowButton = styled(Button)(({ theme }) => ({
   backgroundColor: "lightblue",
@@ -87,8 +93,37 @@ const messageModalStyles = {
   p: 4,
 };
 
+const csvModalStyle = {
+  position: "absolute",
+  top: "40%",
+  left: "50%",
+  transform: "translate(-50%, -50%)",
+  width: "30%",
+  height: "80%",
+  bgcolor: "background.paper",
+  border: "2px solid #000",
+  borderRadius: "5px",
+  boxShadow: 24,
+  p: 4,
+};
+
 export default function WithDraw() {
-  const { userId: adminID } = useSessionContext();
+  // const { userId: adminID } = useSessionContext();
+
+  const [csvFormData, setCsvFormData] = useState({
+    traxnId: "",
+    userId: "",
+    status: "",
+    // startTime: dayjs(new Date().toLocaleDateString())
+    //   .toDate()
+    //   .toLocaleDateString(),
+    // endTime: dayjs(new Date().toLocaleDateString())
+    //   .toDate()
+    //   .toLocaleDateString(),
+  });
+
+  const [queryCsvModal, setQueryCsvModal] = useState(false);
+  const toggleQueryCsvModal = () => setQueryCsvModal(!queryCsvModal);
 
   const [template, setTemplate] = useState("");
 
@@ -436,7 +471,9 @@ export default function WithDraw() {
           </Paper>
         </Box>
         <Box mt={1} mr={2} width="45%" display="flex" justifyContent="flex-end">
-          <Button variant="contained">Download</Button>
+          <Button onClick={toggleQueryCsvModal} variant="contained">
+            Download
+          </Button>
         </Box>
       </Box>
 
@@ -535,6 +572,45 @@ export default function WithDraw() {
           <Typography variant="h3" color="#ebff25">
             {message}
           </Typography>
+        </Box>
+      </Modal>
+
+      <Modal open={queryCsvModal} onClose={toggleQueryCsvModal}>
+        <Box sx={csvModalStyle}>
+          <TextField fullWidth label="Enter traxn id" />
+          <TextField sx={{ mt: 2 }} fullWidth label="Enter User id" />
+          <TextField sx={{ mt: 2 }} fullWidth label="status" />
+          {/* <TextField sx={{ mt: 2 }} fullWidth label="startTime" /> */}
+          <Box>
+            <LocalizationProvider dateAdapter={AdapterDayjs}>
+              <DemoContainer components={["DatePicker"]}>
+                <DatePicker
+                  label="Enter start time"
+                  value={csvFormData.startTime}
+                  onChange={(newDate) =>
+                    setCsvFormData({ ...csvFormData, startTime: newDate })
+                  }
+                />
+              </DemoContainer>
+            </LocalizationProvider>
+          </Box>
+          <Box>
+            <LocalizationProvider dateAdapter={AdapterDayjs}>
+              <DemoContainer components={["DatePicker"]}>
+                <DatePicker
+                  label="Enter end time"
+                  value={csvFormData.startTime}
+                  onChange={(newDate) =>
+                    setCsvFormData({ ...csvFormData, startTime: newDate })
+                  }
+                />
+              </DemoContainer>
+            </LocalizationProvider>
+          </Box>
+          <TextField sx={{ mt: 2 }} fullWidth label="size" />
+          <Box sx={{ mt: 2 }} display="flex" justifyContent="flex-end">
+            <Button variant="contained">Download</Button>
+          </Box>
         </Box>
       </Modal>
     </>

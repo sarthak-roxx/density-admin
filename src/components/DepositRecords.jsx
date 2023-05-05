@@ -8,6 +8,11 @@ import { useDispatch } from "react-redux";
 import { fetchUsers } from "../redux/kyc/users.slice";
 import { makeGetReq, makePatchReq, makePostReq } from "../utils/axiosHelper";
 import { useSessionContext } from "supertokens-auth-react/recipe/session";
+import { DemoContainer } from "@mui/x-date-pickers/internals/demo";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import dayjs from "dayjs";
 
 const ViewButton = styled(Button)(({ theme }) => ({
   backgroundColor: "lightblue",
@@ -38,6 +43,19 @@ const style = {
   boxShadow: 24,
   p: 4,
 };
+const csvModalStyle = {
+  position: "absolute",
+  top: "40%",
+  left: "50%",
+  transform: "translate(-50%, -50%)",
+  width: "30%",
+  height: "80%",
+  bgcolor: "background.paper",
+  border: "2px solid #000",
+  borderRadius: "5px",
+  boxShadow: 24,
+  p: 4,
+};
 
 const messageModalStyles = {
   position: "absolute",
@@ -57,6 +75,22 @@ export default function DepositRecords() {
   // const { userId: adminID } = useSessionContext();
 
   const [message, setMessage] = useState("");
+
+  const [csvFormData, setCsvFormData] = useState({
+    traxnId: "",
+    userId: "",
+    status: "",
+    // startTime: dayjs(new Date().toLocaleDateString())
+    //   .toDate()
+    //   .toLocaleDateString(),
+    // endTime: dayjs(new Date().toLocaleDateString())
+    //   .toDate()
+    //   .toLocaleDateString(),
+  });
+
+  const [queryCsvModal, setQueryCsvModal] = useState(false);
+  const toggleQueryCsvModal = () => setQueryCsvModal(!queryCsvModal);
+
   const [messageModal, setMessageModal] = useState(false);
   const toggleMessageModal = () => setMessageModal(!messageModal);
 
@@ -368,7 +402,9 @@ export default function DepositRecords() {
           <Typography variant="h1">Deposit Records</Typography>
         </Box>
         <Box width="45%" display="flex" justifyContent="flex-end">
-          <Button variant="contained">Download deposit records</Button>
+          <Button onClick={toggleQueryCsvModal} variant="contained">
+            Download deposit records
+          </Button>
         </Box>
       </Box>
       <Box sx={{ height: 620, width: "100%", p: 1 }}>
@@ -465,6 +501,45 @@ export default function DepositRecords() {
           <Typography variant="h3" color="#ebff25">
             {message}
           </Typography>
+        </Box>
+      </Modal>
+
+      <Modal open={queryCsvModal} onClose={toggleQueryCsvModal}>
+        <Box sx={csvModalStyle}>
+          <TextField fullWidth label="Enter traxn id" />
+          <TextField sx={{ mt: 2 }} fullWidth label="Enter User id" />
+          <TextField sx={{ mt: 2 }} fullWidth label="status" />
+          {/* <TextField sx={{ mt: 2 }} fullWidth label="startTime" /> */}
+          <Box>
+            <LocalizationProvider dateAdapter={AdapterDayjs}>
+              <DemoContainer components={["DatePicker"]}>
+                <DatePicker
+                  label="Enter start time"
+                  value={csvFormData.startTime}
+                  onChange={(newDate) =>
+                    setCsvFormData({ ...csvFormData, startTime: newDate })
+                  }
+                />
+              </DemoContainer>
+            </LocalizationProvider>
+          </Box>
+          <Box>
+            <LocalizationProvider dateAdapter={AdapterDayjs}>
+              <DemoContainer components={["DatePicker"]}>
+                <DatePicker
+                  label="Enter end time"
+                  value={csvFormData.startTime}
+                  onChange={(newDate) =>
+                    setCsvFormData({ ...csvFormData, startTime: newDate })
+                  }
+                />
+              </DemoContainer>
+            </LocalizationProvider>
+          </Box>
+          <TextField sx={{ mt: 2 }} fullWidth label="size" />
+          <Box sx={{ mt: 2 }} display="flex" justifyContent="flex-end">
+            <Button variant="contained">Download</Button>
+          </Box>
         </Box>
       </Modal>
     </>
