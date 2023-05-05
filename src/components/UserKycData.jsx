@@ -1,5 +1,5 @@
 /* eslint-disable */
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   Box,
   Card,
@@ -22,7 +22,9 @@ import { makeGetReq } from "../utils/axiosHelper";
 import { MobileView } from "react-device-detect";
 import { DataGrid } from "@mui/x-data-grid";
 import pp from "../utils/imgs/PP.jpg";
-import { useLocation, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
+import RemarkModal from "./RemarkModal";
+import { updateKYVStatus } from "../utils/updateKYCStatus";
 
 const style = {
   position: "absolute",
@@ -56,18 +58,19 @@ const adminLogsColumns = [
 
 export default function UserKycData() {
   const {state} = useLocation();
-  console.log("sttate", state)
+  const navigate = useNavigate();
   const { userID } = useParams();
   const [userKycData, setUserKycData] = useState({});
   const [confirmModalOpen, setConfirmModalOpen] = useState(false);
-  const toggleConfirmModal = () => setConfirmModalOpen(!confirmModalOpen);
   const isNotMobile = useMediaQuery("(min-width:768px)");
   const [enlarge, setEnlarge] = useState(false);
   const toggleEnlarge = () => setEnlarge(!enlarge);
-
-  const [userRemark, setUserRemark] = useState("");
+  const [showRemarkError, setShowRemarksError] = useState(false);
+  const [logs, setLogs] = useState([]);
+  const userRemark = useRef()
   const [remarkModal, setRemarkModal] = useState(false);
-  const toggleRemarkModal = () => setRemarkModal(!remarkModal);
+  const [totalRows, setTotalRows] = useState(0);
+  const actionRef = useRef("");
 
   const [isAadharSelfieOpen, setIsAadharSelfieOpen] = useState(false);
   const handleAadharSelfieDialog = () =>
@@ -78,6 +81,10 @@ export default function UserKycData() {
 
   const [isSelfieOpen, setIsSelfieOpen] = useState(false);
   const handleSelfieDialog = () => setIsSelfieOpen(!isSelfieOpen);
+  const [paginationModal, setPaginationModal] = useState({
+    page: 0,
+    pageSize: 5
+  });
 
   const enlargeImg = () => {
     const imgTile = document.getElementById("img-tile");
@@ -94,18 +101,67 @@ export default function UserKycData() {
     imgTile.style.height = "20vh";
     imgTile.style.transition = "transform 1 ease";
   };
+  const {page, pageSize} = paginationModal;
 
-  const fetchUserKycDetails = async () => {
-    const { data } = await makeGetReq(
-      `v1/users/217dc3a3-aa10-4331-b79c-7887e3c61e8d/kyc?userID=217dc3a3-aa10-4331-b79c-7887e3c61e8d`
-    );
-    setUserKycData(data);
-  };
+  const fetchLogs = useCallback(async () =>{
+    const response = await makeGetReq(`/v1/admin-logs?action=kyc&pageNo=${page+1}&size=${pageSize}`)
+    // setLogs(response.data);
+    const logsRows = response?.data?.map((log) => ({
+        id: log?.logID,
+        timestamp: new Date(log.createdAt)?.toLocaleString(),
+        action: log?.actionRemark,
+        admin: log?.adminID
+    }));
+    setLogs(logsRows);
+    setTotalRows(response?.total);
+  },[page,pageSize])
+
+  const handleUpdateKYC = async () => {
+    console.log(userRemark.current.value, "value print kar")
+    if(!userRemark.current.value && actionRef.current === 'FAILED'){
+      setShowRemarksError(true);
+      return;
+    }
+   const {message} = await updateKYVStatus({action: actionRef.current, userID, remarks: userRemark.current.value});
+   if (message === "OK") {
+    navigate('/kycUsers')
+   }
+   else{
+    alert("error");
+   }
+   setShowRemarksError(false);
+    
+  }
 
   useEffect(() => {
-    fetchUserKycDetails();
+    makeGetReq(
+      `v1/users/ebfaf0e0-cdc2-4723-9a15-fbb9e3f3864e/kyc?userID=ebfaf0e0-cdc2-4723-9a15-fbb9e3f3864e`
+    ).then(({data}) => {
+      setUserKycData(data);
+    });
+    
+    
   }, []);
 
+  useEffect(() => {
+    fetchLogs();
+  }, [fetchLogs])
+
+  const getStepStatus = (item) => {
+    // // console.log(item)
+    let val = userKycData?.steps && userKycData?.steps[item]?.status;
+    console.log(val)
+    if(!val) return <></>
+    switch(val){
+      case "SUCCESS":
+        return <Typography sx={{color: "#2e7d32", fontWeight:"500", fontSize:"28px" }}>Approved</Typography>;
+      case "FAILED":
+        return <Typography sx={{color: "#d32f2f", fontWeight:"500", fontSize:"28px" }}>Failed</Typography>;
+      default: 
+         return <Typography sx={{color: "#fff44f", fontWeight:"500", fontSize:"28px" }}>Pending</Typography>;
+    }
+
+  }
   return (
     <>
       <Box margin={1}>
@@ -240,7 +296,7 @@ export default function UserKycData() {
                   <img
                     width="40%"
                     className="small"
-                    src={pp}
+                    src={userKycData?.documentDetail?.POAData?.documentImageURL}
                     alt="aadhar selfie"
                   />
                   {isAadharSelfieOpen && (
@@ -271,16 +327,9 @@ export default function UserKycData() {
                     <Typography variant="h5">Click here to enlarge</Typography>
                   </Button>
                 </Box>
-                {/* <Box marginTop={2}>
-                  <Button
-                    onClick={toggleConfirmModal}
-                    color="success"
-                    variant="contained"
-                    fullWidth
-                  >
-                    Approve
-                  </Button>
-                </Box> */}
+                <Box marginTop={2} textAlign={"center"}>
+                  {userKycData && getStepStatus("PROOF_OF_ADDRESS")}
+                </Box>
               </CardContent>
             </Card>
           </Box>
@@ -316,16 +365,9 @@ export default function UserKycData() {
                     <Typography variant="h5">Click here to enlarge</Typography>
                   </Button>
                 </Box> */}
-                {/* <Box marginTop={2}>
-                  <Button
-                    onClick={toggleConfirmModal}
-                    color="error"
-                    variant="contained"
-                    fullWidth
-                  >
-                    Reject
-                  </Button>
-                </Box> */}
+                <Box marginTop={2} textAlign={"center"}>
+                  {userKycData && getStepStatus("PROOF_OF_IDENTITY")}
+                </Box>
               </CardContent>
             </Card>
           </Box>
@@ -353,7 +395,7 @@ export default function UserKycData() {
                   <img
                     width="40%"
                     className="small"
-                    src={pp}
+                    src={userKycData?.documentDetail?.FaceCaptureData?.documentImageURL}
                     alt="aadhar selfie"
                   />
                   {isSelfieOpen && (
@@ -377,22 +419,15 @@ export default function UserKycData() {
                     <Typography variant="h5">Click here to enlarge</Typography>
                   </Button>
                 </Box>
-                {/* <Box marginTop={2}>
-                  <Button
-                    onClick={toggleConfirmModal}
-                    color="error"
-                    variant="contained"
-                    fullWidth
-                  >
-                    Reject
-                  </Button>
-                </Box> */}
+                <Box marginTop={2} textAlign={"center"}>
+                  {userKycData && getStepStatus("FACE_MATCH")}
+                </Box>
               </CardContent>
             </Card>
           </Box>
         </Box>
 
-        <Box width={isNotMobile ? "30%" : "100%"} border="1px solid grey">
+        <Box width={isNotMobile ? "30%" : "100%"} height={!isNotMobile ? "400px" : "300px"} border="1px solid grey">
           <DataGrid
             sx={{
               ".MuiDataGrid-columnHeaderCheckbox": {
@@ -405,15 +440,14 @@ export default function UserKycData() {
                 outline: "none !important",
               },
             }}
-            rows={[]}
+            rows={logs}
             columns={adminLogsColumns}
-            initialState={{
-              pagination: {
-                paginationModel: {
-                  pageSize: 10,
-                },
-              },
+            paginationMode="server"
+            paginationModel={paginationModal}
+            onPaginationModelChange={(event) => {
+              setPaginationModal({ page: event.page , pageSize : event.pageSize});
             }}
+            rowCount={totalRows}
             pageSizeOptions={[10]}
             checkboxSelection
             disableRowSelectionOnClick
@@ -421,7 +455,7 @@ export default function UserKycData() {
         </Box>
       </Box>
 
-      <Box 
+      { (userKycData?.status === "IN_REVIEW") && (<Box 
         display="flex" 
         justifyContent="space-between"  
         margin={"auto"} 
@@ -429,47 +463,70 @@ export default function UserKycData() {
           <Button 
             color="error"
             variant="contained"
+            onClick={()=>{
+              actionRef.current = "FAILED"
+              setRemarkModal(true)
+            }}
+
           >
             Reject
           </Button>
           <Button
             color="success"
             variant="contained"  
+            onClick={()=>{
+              actionRef.current = "VERIFIED"
+              setRemarkModal(true)
+            }}
           >
               Approve
           </Button>
         
-      </Box>
+      </Box>)}
 
-      <Modal onClose={toggleConfirmModal} open={confirmModalOpen}>
-        <Box sx={style}>
-          <Box display="flex" justifyContent="center" marginBottom={2}>
-            <Typography variant="h2">Are you sure?</Typography>
+
+      <RemarkModal open={remarkModal} close={() => {
+                  setShowRemarksError(false);
+                  setRemarkModal(false)
+                }}>
+        <Box sx={{...style, textAlign: "center"}}>
+          <Box display="flex" justifyContent="center" marginBottom={3}>
+            <Typography variant="h2">Are you sure ?</Typography>
           </Box>
-          <Box display="flex" justifyContent="space-between">
+          <TextField
+            label="Add a remark"
+            inputRef = {userRemark}
+            // onChange={(e) => console.log(e.target.value)}
+          />
+          <Typography component={"p"} sx = {{display : showRemarkError ? "block" : "none"}} color="error" >Remarks Can not be empty</Typography>
+          <Box display="flex" justifyContent="space-between" mt={2}>
             <Box width="40%">
-              <Button fullWidth variant="contained" color="error">
+              <Button 
+                fullWidth 
+                variant="contained" 
+                color="error"
+                onClick={() => {
+                  setShowRemarksError(false);
+                  setRemarkModal(false)
+                }
+                }
+                >
                 No
               </Button>
             </Box>
             <Box width="40%">
-              <Button fullWidth variant="contained" color="success">
+              <Button 
+                fullWidth 
+                variant="contained"
+                color="success"
+                onClick={() => handleUpdateKYC()}
+                >
                 Yes
               </Button>
             </Box>
           </Box>
         </Box>
-      </Modal>
-
-      <Modal open={remarkModal} onClose={toggleRemarkModal}>
-        <Box sx={style}>
-          <TextField
-            label="Add a remark"
-            value={userRemark}
-            onChange={(e) => setUserRemark(e.target.value)}
-          />
-        </Box>
-      </Modal>
+      </RemarkModal>
     </>
   );
 }

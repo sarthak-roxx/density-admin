@@ -11,7 +11,7 @@ axiosInstance.defaults.headers.common.accept = "*/*";
 axiosInstance.defaults.headers.common.rid = "anti-csrf";
 
 export const makeGetReq = async (apiRoute, payload) => {
-  const { data } = await axiosInstance.get(apiRoute, payload);
+  const { data } = await axiosInstance.get(apiRoute);
   return data;
 };
 

@@ -1,12 +1,12 @@
 /* eslint-disable  */
-import { makePostReq } from "./axiosHelper";
+import { makePatchReq } from "./axiosHelper";
 
 export const updateKYVStatus = ({action, userID, remarks}) => {
-    if(!remarks) window.alert("remarks can not be empty");
+    if(!remarks && action === "FAILED") return;
     const body = {
       userID,
       status: action,
-      remarks,
+      remark: [remarks],
     }
-    return makePostReq('/v1/user/kyc', JSON.stringify(body))
+    return makePatchReq('/v1/kyc/status', body)
 }

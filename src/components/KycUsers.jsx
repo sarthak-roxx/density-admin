@@ -356,7 +356,7 @@ export default function KycUsers() {
       phone: user.mobileNumber || "---",
       bankVerifyStatus: user.pennyDropStatus,
     }));
-    setUserRows(rows);
+    setUserRows([ ...rows]);
     setTotalRows(total)
   }, [paginationModal.page, paginationModal.pageSize, filterByKycStatus])
 
@@ -364,7 +364,7 @@ export default function KycUsers() {
     fetchAllUsers();
   }, [fetchAllUsers]);
 
-  
+  console.log("user rows", userRows);
   return (
     <>
       <BrowserView>
@@ -434,7 +434,7 @@ export default function KycUsers() {
                 outline: "none !important",
               },
             }}
-            rows={userRows}
+            rows={[...userRows]}
             columns={usersColumns}
             paginationModel={paginationModal}
             rowCount={totalRows}
@@ -517,7 +517,7 @@ export default function KycUsers() {
               fullWidth
             />
           </Box>
-          {accordionItems
+          {/* {accordionItems
             .filter((accItem) => accItem.email.includes(filterByEmail))
             .map((accItem) => (
               <Accordion key={accItem.id}>
@@ -610,7 +610,7 @@ export default function KycUsers() {
                   </Card>
                 </AccordionDetails>
               </Accordion>
-            ))}
+            ))} */}
         </Box>
       </MobileView>
     </>
