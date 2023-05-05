@@ -311,14 +311,6 @@ export default function DepositRecords() {
                   ActionType: params.row.TraxnType,
                 });
                 toggleRemarkModal();
-                // await processTraxn(
-                //   params.row.UserID,
-                //   "reject",
-                //   params.row.RefID,
-                //   params.row.FiatTxnID,
-                //   params.row.depositAmount + ""
-                // );
-                // await fetchAllLogs();
               }}
             >
               Reject
