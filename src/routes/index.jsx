@@ -24,7 +24,6 @@ export default function AppRouter() {
             {densityAdminRoutes.map((route, idx) => (
               <Route
                 path={route.path}
-                // element={route.component}
                 element={<SessionAuth>{route.component}</SessionAuth>}
                 // element={route.component}
                 key={idx}
