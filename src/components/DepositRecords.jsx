@@ -368,7 +368,8 @@ export default function DepositRecords() {
         paginationModal.pageSize
       }&start=${paginationModal.page * paginationModal.pageSize}`
     );
-    // console.log(data);
+
+    console.log(data);
     const rows = data
       .map((traxn) => ({
         id: traxn.id,
@@ -387,7 +388,10 @@ export default function DepositRecords() {
         UserID: traxn.userID,
         TraxnType: traxn.fiatTransactionType,
       }))
-      .filter((traxn) => traxn.depositStatus !== "FAILED");
+      .filter(
+        (traxn) =>
+          traxn.depositStatus !== "FAILED" && traxn.depositStatus !== "SUCCESS"
+      );
 
     setFiatTraxns(rows);
     setTotalRows(total);
@@ -399,7 +403,7 @@ export default function DepositRecords() {
         depositPaginationModal.pageSize
       }&pageNo=${depositPaginationModal.page + 1}`
     );
-    console.log(data);
+    // console.log(data);
     const rows = data.map((log) => ({
       id: log.logID,
       admin: log.adminName,
@@ -410,7 +414,7 @@ export default function DepositRecords() {
       remarks: log.action.log.Remarks?.join(" "),
       amount: log.action.log.Amount,
     }));
-    console.log(rows);
+    // console.log(rows);
     setDepositRows(rows);
     setTotalDepositLogRows(total);
   }, [depositPaginationModal.page, depositPaginationModal.pageSize]);
@@ -633,6 +637,7 @@ export default function DepositRecords() {
           <Box display="flex" flexDirection="column">
             <TextField
               required
+              label="Enter Remark"
               value={remark}
               onChange={(e) => setRemark(e.target.value)}
             />
