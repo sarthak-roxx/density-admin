@@ -1,3 +1,5 @@
+/* eslint-disable */
+
 import React from "react";
 import UserKycData from "../components/UserKycData";
 import WithDraw from "../components/WithDraw";
