@@ -95,7 +95,7 @@ export default function UserKycData() {
         id: log?.logID,
         timestamp: new Date(log.createdAt)?.toLocaleString(),
         action: log?.actionRemark,
-        admin: log?.adminID
+        admin: log?.adminName
     }));
     setLogs(logsRows);
     setTotalRows(response?.total);
