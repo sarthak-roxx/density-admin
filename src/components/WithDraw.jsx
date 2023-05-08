@@ -113,7 +113,7 @@ const remarkModalStyles = {
   left: "50%",
   transform: "translate(-50%, -50%)",
   width: "40%",
-  height: "20%",
+  height: "30%",
   bgcolor: "background.paper",
   border: "2px solid #000",
   borderRadius: "5px",
@@ -136,6 +136,7 @@ export default function WithDraw() {
     //   .toLocaleDateString(),
   });
 
+  const [txnRefId, setTxnRefId] = useState("");
   const [queryCsvModal, setQueryCsvModal] = useState(false);
   const toggleQueryCsvModal = () => setQueryCsvModal(!queryCsvModal);
 
@@ -400,9 +401,11 @@ export default function WithDraw() {
 
   const fetchAllFiatTxn = useCallback(async () => {
     const { data, total } = await makeGetReq(
-      `v1/fiat/query-fiat-transaction?type=INR_WITHDRAWL&size=${
+      `v1/fiat/query-fiat-transaction?type=INR_WITHDRAWAL&size=${
         paginationModal.pageSize
-      }&start=${paginationModal.page * paginationModal.pageSize}`
+      }&start=${
+        paginationModal.page * paginationModal.pageSize
+      }&status=PROCESSING`
     );
     const rows = data
       .map((traxn) => ({
@@ -411,7 +414,7 @@ export default function WithDraw() {
           traxn.userFirstName && traxn.userLastName
             ? traxn.userFirstName + " " + traxn.userLastName
             : "---",
-        depositAmount: traxn.amount,
+        withdrawAmount: Math.abs(traxn.amount),
         depositStatus: traxn.fiatTransactionStatus,
         bankAccNo: traxn.userBankAccount,
         email: traxn.userEmail,
@@ -449,7 +452,7 @@ export default function WithDraw() {
 
   const getFiatTraxnById = async (userId) => {
     const { data } = await makeGetReq(
-      `v1/fiat/query-fiat-transaction?userID=${userId}&type=INR_WITHDRAWL`
+      `v1/fiat/query-fiat-transaction?userID=${userId}&type=INR_WITHDRAWAL&status=PROCESSING`
     );
     const rows = data.map((traxn) => ({
       id: traxn.id,
@@ -693,8 +696,16 @@ export default function WithDraw() {
           <Box display="flex" flexDirection="column">
             <TextField
               required
+              label="Enter remark"
               value={remark}
               onChange={(e) => setRemark(e.target.value)}
+            />
+            <TextField
+              sx={{ mt: 2 }}
+              required
+              label="Enter traxn Ref ID"
+              value={txnRefId}
+              onChange={(e) => setTxnRefId(e.target.value)}
             />
             <Button
               variant="contained"
@@ -703,7 +714,7 @@ export default function WithDraw() {
                 await processTraxn(
                   deposit.UserID,
                   deposit.action,
-                  deposit.RefID,
+                  txnRefId,
                   deposit.FiatTxnID,
                   deposit.Amount,
                   [remark],

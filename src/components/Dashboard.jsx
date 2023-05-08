@@ -10,11 +10,13 @@ import {
 } from "@mui/material";
 // import { logoutApp } from "../services/Supertokens/SuperTokensHelper";
 // import axiosInstance, { makeGetReq } from "../utils/axiosHelper";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 // import useSWR from "swr";
 import { shades } from "../utils/theme";
 // import axios from "axios";
 import { BrowserView } from "react-device-detect";
+import { makeGetReq, makePostReq } from "../utils/axiosHelper";
+import InfoModal from "./InfoModal";
 
 const changeAppVerModalStyles = {
   position: "absolute",
@@ -32,9 +34,41 @@ const changeAppVerModalStyles = {
 export default function Dashboard() {
   const isMobile = useMediaQuery("(min-width:768px)");
   const [appVersion, setAppVersion] = useState("");
+  const [osType, setOsType] = useState("");
   const [changeAppVerModal, setChangeAppVerModal] = useState(false);
+  const [showInfoModal, setShowInfoModal] = useState(false);
+  const toggleInfoModal = () => setShowInfoModal(!showInfoModal);
   const toggleChangeAppVerModal = () =>
     setChangeAppVerModal(!changeAppVerModal);
+
+  const [showInfoMessage, setShowInfoMessage] = useState("");
+  // const [appVer, setAppVer] = useState();
+
+  const getAppVer = async () => {
+    const { data } = await makeGetReq("/mobile/version?osType=ANDROID");
+    console.log(data);
+  };
+
+  const changeAppVersion = async () => {
+    makePostReq("v1/mobile/version", {
+      osType,
+      version: appVersion,
+    })
+      .then((res) => {
+        setShowInfoMessage(res.data.message);
+        toggleInfoModal();
+        toggleChangeAppVerModal();
+      })
+      .catch((err) => {
+        setShowInfoMessage(err.response.data.ErrorMessage);
+        toggleInfoModal();
+        toggleChangeAppVerModal();
+      });
+  };
+
+  useEffect(() => {
+    getAppVer();
+  }, []);
 
   return (
     <>
@@ -53,7 +87,7 @@ export default function Dashboard() {
                 flexDirection={isMobile ? "row" : "column"}
                 justifyContent="space-between"
               >
-                <Card sx={{ minWidth: 240 }}>
+                {/* <Card sx={{ minWidth: 200 }}>
                   <CardContent>
                     <Typography variant="h4" gutterBottom mb={5}>
                       Total Sign Up Users
@@ -61,7 +95,7 @@ export default function Dashboard() {
                     <Typography variant="h1">197</Typography>
                   </CardContent>
                 </Card>
-                <Card sx={{ minWidth: 240 }}>
+                <Card sx={{ minWidth: 200 }}>
                   <CardContent>
                     <Typography variant="h4" gutterBottom mb={5}>
                       Total Success KYC
@@ -77,7 +111,7 @@ export default function Dashboard() {
                     <Typography variant="h1">46</Typography>
                   </CardContent>
                 </Card>
-                <Card sx={{ minWidth: 240 }}>
+                <Card sx={{ minWidth: 200 }}>
                   <CardContent>
                     <Typography variant="h4" gutterBottom mb={5}>
                       Total Failed KYC
@@ -87,7 +121,7 @@ export default function Dashboard() {
                     </Typography>
                   </CardContent>
                 </Card>
-                <Card sx={{ minWidth: 240 }}>
+                <Card sx={{ minWidth: 200 }}>
                   <CardContent>
                     <Typography variant="h4" gutterBottom mb={5}>
                       Total Deposit Request
@@ -97,10 +131,20 @@ export default function Dashboard() {
                     </Typography>
                   </CardContent>
                 </Card>
-                <Card sx={{ minWidth: 240 }}>
+                <Card sx={{ minWidth: 200 }}>
                   <CardContent>
                     <Typography variant="h4" gutterBottom mb={5}>
                       Total Withdraw Request
+                    </Typography>
+                    <Typography variant="h1" mb={1}>
+                      29
+                    </Typography>
+                  </CardContent>
+                </Card> */}
+                <Card sx={{ minWidth: 200 }}>
+                  <CardContent>
+                    <Typography variant="h4" gutterBottom mb={5}>
+                      App Version
                     </Typography>
                     <Typography variant="h1" mb={1}>
                       29
@@ -121,11 +165,26 @@ export default function Dashboard() {
             value={appVersion}
             onChange={(e) => setAppVersion(e.target.value)}
           />
+          <TextField
+            sx={{ mt: 1 }}
+            fullWidth
+            label="Enter os type"
+            value={osType}
+            onChange={(e) => setOsType(e.target.value)}
+          />
           <Box mt={1} display="flex" justifyContent="flex-end">
-            <Button variant="contained">Change</Button>
+            <Button onClick={changeAppVersion} variant="contained">
+              Change
+            </Button>
           </Box>
         </Box>
       </Modal>
+
+      <InfoModal
+        modal={showInfoModal}
+        toggleModal={toggleInfoModal}
+        message={showInfoMessage}
+      />
     </>
   );
 }
