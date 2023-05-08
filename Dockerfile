@@ -1,10 +1,10 @@
 FROM node:18.15.0-alpine as build
-ARG HOST
+ARG BUILD_TYPE
 WORKDIR /app
 ENV PATH /app/node_modules/.bin:$PATH
 #ENV NODE_ENV production
-ENV VITE_HOST ${HOST}
-RUN echo "vite_host=${HOST}"
+ENV VITE_BUILD_TYPE ${BUILD_TYPE}
+RUN echo "vite_host=${BUILD_TYPE}}"
 COPY package.json ./
 COPY package-lock.json ./
 RUN npm ci --legacy-peer-deps

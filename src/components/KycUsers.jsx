@@ -210,7 +210,7 @@ export default function KycUsers() {
           <>
             <ShowButton
               onClick={() => {
-                console.log(params);
+                // console.log(params);
                 navigate(`/kycData/${params.id}`, {
                   state: {
                     email: params?.row?.email,
@@ -272,7 +272,7 @@ export default function KycUsers() {
     },
   ];
   const changePagination = (event) => {
-    console.log(event);
+    // console.log(event);
     setPaginationModal({ page: event.page, pageSize: event.pageSize });
   };
   const handleAlignment = async (event, newAlignment) => {
