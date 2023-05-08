@@ -107,6 +107,20 @@ const csvModalStyle = {
   p: 4,
 };
 
+const remarkModalStyles = {
+  position: "absolute",
+  top: "50%",
+  left: "50%",
+  transform: "translate(-50%, -50%)",
+  width: "40%",
+  height: "20%",
+  bgcolor: "background.paper",
+  border: "2px solid #000",
+  borderRadius: "5px",
+  boxShadow: 24,
+  p: 4,
+};
+
 export default function WithDraw() {
   // const { userId: adminID } = useSessionContext();
 
@@ -128,6 +142,9 @@ export default function WithDraw() {
   const [template, setTemplate] = useState("");
 
   const [message, setMessage] = useState("");
+  const [actionType, setActionType] = useState("");
+  const [deposit, setDeposit] = useState(null);
+
   const [messageModal, setMessageModal] = useState(false);
   const toggleMessageModal = () => setMessageModal(!messageModal);
 
@@ -156,24 +173,52 @@ export default function WithDraw() {
     // setPaginationModal(paginationModal => ({ page: 1, pageSize : paginationModal.pageSize}))
   };
 
+  const [remark, setRemark] = useState("");
+  const [remarkModal, setRemarkModal] = useState(false);
+  const toggleRemarkModal = () => setRemarkModal(!remarkModal);
+
   const depositLogs = [
     {
       field: "timestamp",
       headerClassName: "kyc-column-header",
       headerName: "Timestamp",
-      width: 250,
+      width: 150,
     },
     {
       field: "action",
       headerClassName: "kyc-column-header",
       headerName: "Action",
-      width: 250,
+      width: 150,
     },
     {
       field: "admin",
       headerClassName: "kyc-column-header",
       headerName: "Admin",
-      width: 300,
+      width: 200,
+    },
+    {
+      field: "remarks",
+      headerClassName: "kyc-column-header",
+      headerName: "Remark",
+      width: 500,
+    },
+    {
+      field: "amount",
+      headerClassName: "kyc-column-header",
+      headerName: "Amount",
+      width: 180,
+    },
+    {
+      field: "user",
+      headerClassName: "kyc-column-header",
+      headerName: "User",
+      width: 200,
+    },
+    {
+      field: "phone",
+      headerClassName: "kyc-column-header",
+      headerName: "Phone",
+      width: 200,
     },
   ];
 
@@ -261,14 +306,17 @@ export default function WithDraw() {
           <>
             <ApproveButton
               disabled={params.row.depositStatus == "SUCCESS"}
-              onClick={async () => {
-                processTraxn(
-                  params.row.UserID,
-                  "approve",
-                  params.row.RefID,
-                  params.row.FiatTxnID
-                );
-                await fetchAllLogs();
+              onClick={() => {
+                setActionType("Approve");
+                setDeposit({
+                  UserID: params.row.UserID,
+                  action: "approve",
+                  RefID: params.row.RefID,
+                  FiatTxnID: params.row.FiatTxnID,
+                  Amount: params.row.depositAmount + "",
+                  ActionType: params.row.TraxnType,
+                });
+                toggleRemarkModal();
               }}
             >
               Approve
@@ -287,14 +335,17 @@ export default function WithDraw() {
           <>
             <RejectButton
               disabled={params.row.depositStatus == "SUCCESS"}
-              onClick={async () => {
-                processTraxn(
-                  params.row.UserID,
-                  "reject",
-                  params.row.RefID,
-                  params.row.FiatTxnID
-                );
-                await fetchAllLogs();
+              onClick={() => {
+                setActionType("Reject");
+                setDeposit({
+                  UserID: params.row.UserID,
+                  action: "reject",
+                  RefID: params.row.RefID,
+                  FiatTxnID: params.row.FiatTxnID,
+                  Amount: params.row.depositAmount + "",
+                  ActionType: params.row.TraxnType,
+                });
+                toggleRemarkModal();
               }}
             >
               Reject
@@ -386,7 +437,11 @@ export default function WithDraw() {
       id: log.logID,
       admin: log.adminName,
       timestamp: new Date(log.createdAt).toLocaleDateString(),
-      action: log.actionRemark,
+      action: log.action.log.ApproveAction == 1 ? "Approve" : "Reject",
+      user: log.userFirstName + " " + log.userLastName,
+      phone: log.phone,
+      remarks: log.action.log.Remarks?.join(" "),
+      amount: log.action.log.Amount,
     }));
     setDepositRows(rows);
     setTotalDepositLogRows(total);
@@ -411,7 +466,15 @@ export default function WithDraw() {
     }));
     setFiatTraxnHistoryRows(rows);
   };
-  const processTraxn = async (UserID, action, RefID, FiatTxnID) => {
+  const processTraxn = async (
+    UserID,
+    action,
+    RefID,
+    FiatTxnID,
+    Amount,
+    Remark,
+    ActionType
+  ) => {
     try {
       const res = await makePostReq(
         `v1/fiat/transaction/${UserID}/processTransaction`,
@@ -420,13 +483,18 @@ export default function WithDraw() {
           RefID,
           FiatTxnID,
           UserID,
+          Amount,
+          Remark,
+          ActionType,
         }
       );
       toggleMessageModal();
+      toggleRemarkModal();
       setMessage(`Transaction completed with an action ${action}`);
       await getListOfFiatTraxn();
     } catch (err) {
       toggleMessageModal();
+      toggleRemarkModal();
       setMessage(err.response.data.ErrorMessage);
       await getListOfFiatTraxn();
     }
@@ -508,7 +576,7 @@ export default function WithDraw() {
         <Typography variant="h1">Withdraw Logs</Typography>
       </Box>
       <Box display="flex" justifyContent="center">
-        <Box sx={{ height: 650, width: "60%", p: 1 }}>
+        <Box sx={{ height: 650, width: "100%", p: 1 }}>
           <DataGrid
             sx={{
               ".MuiDataGrid-columnHeaderCheckbox": {
@@ -610,6 +678,43 @@ export default function WithDraw() {
           <TextField sx={{ mt: 2 }} fullWidth label="size" />
           <Box sx={{ mt: 2 }} display="flex" justifyContent="flex-end">
             <Button variant="contained">Download</Button>
+          </Box>
+        </Box>
+      </Modal>
+
+      <Modal
+        open={remarkModal}
+        onClose={() => {
+          setRemark("");
+          toggleRemarkModal();
+        }}
+      >
+        <Box sx={remarkModalStyles}>
+          <Box display="flex" flexDirection="column">
+            <TextField
+              required
+              value={remark}
+              onChange={(e) => setRemark(e.target.value)}
+            />
+            <Button
+              variant="contained"
+              sx={{ mt: 2 }}
+              onClick={async () => {
+                await processTraxn(
+                  deposit.UserID,
+                  deposit.action,
+                  deposit.RefID,
+                  deposit.FiatTxnID,
+                  deposit.Amount,
+                  [remark],
+                  deposit.ActionType
+                );
+
+                await fetchAllLogs();
+              }}
+            >
+              {actionType}
+            </Button>
           </Box>
         </Box>
       </Modal>
