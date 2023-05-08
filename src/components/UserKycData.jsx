@@ -104,7 +104,7 @@ export default function UserKycData() {
   const {page, pageSize} = paginationModal;
 
   const fetchLogs = useCallback(async () =>{
-    const response = await makeGetReq(`/v1/admin-logs?action=kyc&pageNo=${page+1}&size=${pageSize}`)
+    const response = await makeGetReq(`/v1/admin-logs?actionType=KYC&pageNo=${page+1}&size=${pageSize}&userID=${userID}`)
     // setLogs(response.data);
     const logsRows = response?.data?.map((log) => ({
         id: log?.logID,
@@ -135,13 +135,20 @@ export default function UserKycData() {
 
   useEffect(() => {
     makeGetReq(
-      `v1/users/ebfaf0e0-cdc2-4723-9a15-fbb9e3f3864e/kyc?userID=ebfaf0e0-cdc2-4723-9a15-fbb9e3f3864e`
+      `v1/users/${userID}/kyc?userID=${userID}`
     ).then(({data}) => {
       setUserKycData(data);
     });
     
     
   }, []);
+
+  const getFieldData = (data) => {
+    if(data){
+      return data;
+    }
+    return "--";
+  }
 
   useEffect(() => {
     fetchLogs();
@@ -178,38 +185,38 @@ export default function UserKycData() {
               >
                 <Typography>Name</Typography>
                 <hr />
-                <Typography variant="h4">{userKycData?.documentDetail?.POAData?.name}</Typography>
+                <Typography variant="h4">{getFieldData(userKycData?.documentDetail?.POAData?.name)}</Typography>
               </Box>
               <Box  padding={1}>
                 <Typography>Email</Typography>
                 <hr />
-                <Typography variant="h4">{state?.email}</Typography>
+                <Typography variant="h4">{getFieldData(state?.email)}</Typography>
               </Box>
               <Box  padding={1}>
                 <Typography>DOB</Typography>
                 <hr />
-                <Typography variant="h4">{userKycData?.documentDetail?.POAData?.DOB}</Typography>
+                <Typography variant="h4">{getFieldData(userKycData?.documentDetail?.POAData?.DOB)}</Typography>
               </Box>
               <Box  padding={1}>
                 <Typography>Gender</Typography>
                 <hr />
-                <Typography variant="h4">{userKycData?.documentDetail?.POAData?.gender === 'M' ? "Male" : "Female"}</Typography>
+                <Typography variant="h4">{userKycData?.documentDetail?.POAData?.gender ? (userKycData?.documentDetail?.POAData?.gender === 'M' ? "Male" : "Female") : "--"}</Typography>
               </Box>
               <Box  padding={1}>
                 <Typography>Phone</Typography>
                 <hr />
-                <Typography variant="h4">{state?.phone}</Typography>
+                <Typography variant="h4">{getFieldData(state?.phone)}</Typography>
               </Box>
               <Box  padding={1}>
                 <Typography>Name Match</Typography>
                 <hr />
-                <Typography variant="h4">{(userKycData?.documentDetail?.IdentityMatchData?.nameMatchScore / 5) * 100 } %</Typography>
+                <Typography variant="h4">{userKycData?.documentDetail?.IdentityMatchData ? (userKycData?.documentDetail?.IdentityMatchData?.nameMatchScore / 5) * 100 : "--"} %</Typography>
               </Box>
               <Box  padding={1}>
                 <Typography>Selfie Match</Typography>
                 <hr />
                 <Typography variant="h4">
-                {userKycData?.documentDetail?.FaceMatchData?.matchPercentWithPOAImage}%
+                {getFieldData(userKycData?.documentDetail?.FaceMatchData?.matchPercentWithPOAImage)}%
                 </Typography>
               </Box>
               <Box padding={1}>
@@ -252,7 +259,7 @@ export default function UserKycData() {
                         Name:
                       </Typography>
                       <Typography variant="h5">
-                        {userKycData?.documentDetail?.POAData?.name}
+                        {getFieldData(userKycData?.documentDetail?.POAData?.name)}
                       </Typography>
                     </Box>
                     <Box display="flex" gap={1}>
@@ -260,7 +267,7 @@ export default function UserKycData() {
                         Gender:
                       </Typography>
                       <Typography variant="h5">
-                        {userKycData?.documentDetail?.POAData?.gender === 'M' ? "Male" : "Female"}
+                        {userKycData?.documentDetail?.POAData?.gender ? (userKycData?.documentDetail?.POAData?.gender === 'M' ? "Male" : "Female") : "--"}
                       </Typography>
                     </Box>
                     <Box display="flex" gap={1}>
@@ -268,7 +275,7 @@ export default function UserKycData() {
                         DOB:
                       </Typography>
                       <Typography variant="h5">
-                        {userKycData?.documentDetail?.POAData?.DOB}
+                        {getFieldData(userKycData?.documentDetail?.POAData?.DOB)}
                       </Typography>
                     </Box>
                     <Box display="flex" gap={1} width={10}>
@@ -276,7 +283,7 @@ export default function UserKycData() {
                         Aadhar No.:
                       </Typography>
                       <Typography variant="h5">
-                        {userKycData?.documentDetail?.POAData?.IDNumber}
+                        {getFieldData(userKycData?.documentDetail?.POAData?.IDNumber)}
                       </Typography>
                     </Box>
                     <Box display="flex" gap={1}>
@@ -284,21 +291,21 @@ export default function UserKycData() {
                         Address:
                       </Typography>
                       <Typography variant="h5" sx={{maxWidth:"120px"}}>
-                        {userKycData?.documentDetail?.POAData?.address?.house +
+                        { userKycData?.documentDetail?.POAData?.address ? userKycData?.documentDetail?.POAData?.address?.house +
                           ", " +
                           userKycData?.documentDetail?.POAData?.address?.landmark +
                           ", " +
-                          userKycData?.documentDetail?.POAData?.address?.landmark}
+                          userKycData?.documentDetail?.POAData?.address?.landmark : "--"}
                       </Typography>
                     </Box>
                   </Box>
 
-                  <img
+                  { userKycData?.documentDetail?.POAData?.documentImageURL && <img
                     width="40%"
                     className="small"
                     src={userKycData?.documentDetail?.POAData?.documentImageURL}
                     alt="aadhar selfie"
-                  />
+                  />}
                   {isAadharSelfieOpen && (
                     <dialog
                       className="dialog"
@@ -347,7 +354,7 @@ export default function UserKycData() {
                         Name:
                       </Typography>
                       <Typography variant="h5">
-                        {userKycData?.documentDetail?.POIData?.nameOnCard}
+                        {getFieldData(userKycData?.documentDetail?.POIData?.nameOnCard)}
                       </Typography>
                     </Box>
                     <Box display="flex" gap={1}>
@@ -355,7 +362,7 @@ export default function UserKycData() {
                         Pan No.:
                       </Typography>
                       <Typography variant="h5">
-                        {userKycData?.documentDetail?.POIData?.IDNumber}
+                        {getFieldData(userKycData?.documentDetail?.POIData?.IDNumber)}
                       </Typography>
                     </Box>
                   </Box>
@@ -388,16 +395,18 @@ export default function UserKycData() {
                       Selfie Match:
                     </Typography>
                     <Typography variant="h5">
-                      {userKycData?.documentDetail?.FaceMatchData?.matchPercentWithPOAImage}%
+                      {getFieldData(userKycData?.documentDetail?.FaceMatchData?.matchPercentWithPOAImage) }
                       </Typography>
                   </Box>
 
-                  <img
+                  { 
+                  userKycData?.documentDetail?.FaceCaptureData?.documentImageURL && <img
                     width="40%"
                     className="small"
                     src={userKycData?.documentDetail?.FaceCaptureData?.documentImageURL}
                     alt="aadhar selfie"
                   />
+                  }
                   {isSelfieOpen && (
                     <dialog
                       className="dialog"
@@ -455,7 +464,8 @@ export default function UserKycData() {
         </Box>
       </Box>
 
-      { (userKycData?.status === "IN_REVIEW") && (<Box 
+      { (userKycData?.status === "IN_REVIEW") ? (
+      <Box 
         display="flex" 
         justifyContent="space-between"  
         margin={"auto"} 
@@ -482,7 +492,36 @@ export default function UserKycData() {
               Approve
           </Button>
         
-      </Box>)}
+      </Box>) : (userKycData?.status === "SUCCESS") ? (
+        <Box 
+        display="flex" 
+        justifyContent="center"  
+        margin={"auto"} 
+        width={isNotMobile ? "18%" : "80%"} >
+          <Typography
+            color="success"
+            variant="contained"  
+          >
+              Approved
+          </Typography>
+      </Box>
+      ) : (userKycData?.status === "FAILED") ? (
+        <Box 
+          display="flex" 
+          justifyContent="center"  
+          margin={"auto"} 
+          width={isNotMobile ? "18%" : "80%"} >
+          <Typography 
+            color="error"
+            variant="contained"
+          >
+            Reject
+          </Typography>
+        
+      </Box>
+      ) : (<></>)
+      
+    }
 
 
       <RemarkModal open={remarkModal} close={() => {

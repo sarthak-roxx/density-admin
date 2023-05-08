@@ -29,7 +29,7 @@ import { makeGetReq } from "../utils/axiosHelper";
 import { MobileView, BrowserView } from "react-device-detect";
 import FilterComponent from "./FilterComponent";
 import dayjs from "dayjs";
-import { useSessionContext } from "supertokens-auth-react/recipe/session";
+import KYClogs from "./KYClogs";
 
 const ShowButton = styled(Button)(({ theme }) => ({
   backgroundColor: "lightblue",
@@ -153,76 +153,7 @@ export default function KycUsers() {
   const [totalRows, setTotalRows] = useState(0);
   const toggleBankModal = () => setBankModal(!bankModal);
 
-  const kycLogsColumns = [
-    {
-      field: "createdOn",
-      headerClassName: "kyc-column-header",
-      headerName: "Created On",
-      valueFormatter: (params) => dayjs(params.value).format("DD/MM/YYYY"),
-      width: 150,
-    },
-    {
-      field: "firstName",
-      headerClassName: "kyc-column-header",
-      headerName: "First name",
-      width: 150,
-    },
-    {
-      field: "lastName",
-      headerClassName: "kyc-column-header",
-      headerName: "Last name",
-      width: 150,
-    },
-    {
-      field: "email",
-      headerClassName: "kyc-column-header",
-      headerName: "Email",
-      width: 200,
-    },
-    {
-      field: "phone",
-      headerClassName: "kyc-column-header",
-      headerName: "Phone",
-      width: 150,
-    },
-    {
-      field: "kycStatus",
-      headerClassName: "kyc-column-header",
-      headerName: "Kyc Status",
-      width: 150,
-    },
-    {
-      field: "view",
-      headerClassName: "kyc-column-header",
-      headerName: "Show KYC Data",
-      width: 150,
-      renderCell: (params) => {
-        return (
-          <>
-            <ShowButton
-              onClick={() => {
-                navigate(`/kycData/${params.id}`);
-              }}
-            >
-              View
-            </ShowButton>
-          </>
-        );
-      },
-    },
-    {
-      field: "admin",
-      headerClassName: "kyc-column-header",
-      headerName: "Admin",
-      width: 150,
-    },
-    {
-      field: "remarks",
-      headerClassName: "kyc-column-header",
-      headerName: "Remarks",
-      width: 150,
-    },
-  ];
+  
 
   const usersColumns = [
     {
@@ -451,9 +382,10 @@ export default function KycUsers() {
           <Typography variant="h2">KYC Logs</Typography>
         </Box>
         <Box sx={{ p: 2, height: 650, width: "100%" }}>
-          <DataGrid
+           <KYClogs />
+          {/* <DataGrid
             columns={kycLogsColumns}
-            rows={[]}
+            rows={[...logs]}
             sx={{
               ".MuiDataGrid-columnHeaderCheckbox": {
                 display: "none",
@@ -466,7 +398,7 @@ export default function KycUsers() {
               },
               border: 2,
             }}
-          />
+          /> */}
         </Box>
 
         <Modal open={bankModal} onClose={toggleBankModal}>
