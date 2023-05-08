@@ -9,7 +9,7 @@ import {
   Button
 } from "@mui/material";
 import { useSessionContext } from "supertokens-auth-react/recipe/session";
-
+import { useNavigate } from "react-router-dom";
 const ShowButton = styled(Button)(({ theme }) => ({
   backgroundColor: "lightblue",
   borderRadius: "4px",
@@ -21,7 +21,7 @@ const ShowButton = styled(Button)(({ theme }) => ({
 const KYClogs = () => {
 
   const session = useSessionContext();
-  
+  const navigate = useNavigate()
   const kycLogsColumns = [
     {
       field: "createdOn",
@@ -70,6 +70,7 @@ const KYClogs = () => {
           <>
             <ShowButton
               onClick={() => {
+                console.log("params.id", params.id);
                 navigate(`/kycData/${params.id}`);
               }}
             >

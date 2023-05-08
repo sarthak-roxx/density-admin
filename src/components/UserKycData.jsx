@@ -86,21 +86,6 @@ export default function UserKycData() {
     pageSize: 5
   });
 
-  const enlargeImg = () => {
-    const imgTile = document.getElementById("img-tile");
-    imgTile.style.transform = "scale(1)";
-    imgTile.style.width = "60vw";
-    imgTile.style.height = "50vh";
-    imgTile.style.transition = "transform 1 ease";
-  };
-
-  const resizeImg = () => {
-    const imgTile = document.getElementById("img-tile");
-    imgTile.style.transform = "scale(1)";
-    imgTile.style.width = "8vw";
-    imgTile.style.height = "20vh";
-    imgTile.style.transition = "transform 1 ease";
-  };
   const {page, pageSize} = paginationModal;
 
   const fetchLogs = useCallback(async () =>{
@@ -306,7 +291,7 @@ export default function UserKycData() {
                     src={userKycData?.documentDetail?.POAData?.documentImageURL}
                     alt="aadhar selfie"
                   />}
-                  {isAadharSelfieOpen && (
+                  {(isAadharSelfieOpen && userKycData?.documentDetail?.POAData?.documentImageURL) && (
                     <dialog
                       className="dialog"
                       style={{ position: "absolute", zIndex: 1000 }}
@@ -315,7 +300,7 @@ export default function UserKycData() {
                     >
                       <img
                         className="image"
-                        src={pp}
+                        src={userKycData?.documentDetail?.POAData?.documentImageURL}
                         alt="aadhar dialog selfie"
                         onClick={handleAadharSelfieDialog}
                       />
@@ -407,7 +392,7 @@ export default function UserKycData() {
                     alt="aadhar selfie"
                   />
                   }
-                  {isSelfieOpen && (
+                  {isSelfieOpen && userKycData?.documentDetail?.FaceCaptureData?.documentImageURL && (
                     <dialog
                       className="dialog"
                       style={{ position: "absolute", zIndex: 1000 }}
@@ -416,7 +401,7 @@ export default function UserKycData() {
                     >
                       <img
                         className="image"
-                        src={pp}
+                        src={userKycData?.documentDetail?.FaceCaptureData?.documentImageURL}
                         alt="aadhar dialog selfie"
                         onClick={handleSelfieDialog}
                       />
@@ -424,7 +409,7 @@ export default function UserKycData() {
                   )}
                 </Box>
                 <Box mt={1} display="flex" justifyContent="flex-end">
-                  <Button onClick={handleAadharSelfieDialog} variant="outlined">
+                  <Button onClick={handleSelfieDialog} variant="outlined">
                     <Typography variant="h5">Click here to enlarge</Typography>
                   </Button>
                 </Box>
@@ -492,18 +477,13 @@ export default function UserKycData() {
               Approve
           </Button>
         
-      </Box>) : (userKycData?.status === "SUCCESS") ? (
+      </Box>) : (userKycData?.status === "VERIFIED") ? (
         <Box 
         display="flex" 
         justifyContent="center"  
         margin={"auto"} 
         width={isNotMobile ? "18%" : "80%"} >
-          <Typography
-            color="success"
-            variant="contained"  
-          >
-              Approved
-          </Typography>
+          <Typography sx={{color: "#2e7d32", fontWeight:"500", fontSize:"28px" }}>Approved</Typography>;
       </Box>
       ) : (userKycData?.status === "FAILED") ? (
         <Box 
@@ -511,13 +491,8 @@ export default function UserKycData() {
           justifyContent="center"  
           margin={"auto"} 
           width={isNotMobile ? "18%" : "80%"} >
-          <Typography 
-            color="error"
-            variant="contained"
-          >
-            Reject
-          </Typography>
-        
+          <Typography sx={{color: "#d32f2f", fontWeight:"500", fontSize:"28px" }}>Failed</Typography>;
+          
       </Box>
       ) : (<></>)
       
