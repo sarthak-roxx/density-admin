@@ -312,9 +312,8 @@ export default function WithDraw() {
                 setDeposit({
                   UserID: params.row.UserID,
                   action: "approve",
-                  RefID: params.row.RefID,
                   FiatTxnID: params.row.FiatTxnID,
-                  Amount: params.row.depositAmount + "",
+                  Amount: params.row.withdrawAmount + "",
                   ActionType: params.row.TraxnType,
                 });
                 toggleRemarkModal();
@@ -341,9 +340,8 @@ export default function WithDraw() {
                 setDeposit({
                   UserID: params.row.UserID,
                   action: "reject",
-                  RefID: params.row.RefID,
                   FiatTxnID: params.row.FiatTxnID,
-                  Amount: params.row.depositAmount + "",
+                  Amount: params.row.withdrawAmount + "",
                   ActionType: params.row.TraxnType,
                 });
                 toggleRemarkModal();
@@ -415,7 +413,7 @@ export default function WithDraw() {
             ? traxn.userFirstName + " " + traxn.userLastName
             : "---",
         withdrawAmount: Math.abs(traxn.amount),
-        depositStatus: traxn.fiatTransactionStatus,
+        withdrawStatus: traxn.fiatTransactionStatus,
         bankAccNo: traxn.userBankAccount,
         email: traxn.userEmail,
         date: new Date(traxn.createdAt).toLocaleDateString(),
@@ -423,6 +421,7 @@ export default function WithDraw() {
         FiatTxnID: traxn.txnID,
         RefID: traxn.txnRefID,
         UserID: traxn.userID,
+        TraxnType: traxn.fiatTransactionType,
       }))
       .filter((traxn) => traxn.depositStatus !== "FAILED");
 
@@ -463,8 +462,9 @@ export default function WithDraw() {
       email: traxn.userEmail,
       date: new Date(traxn.createdAt).toLocaleDateString(),
       time: new Date(traxn.createdAt).toLocaleTimeString(),
-      depositAmount: traxn.amount,
-      depositStatus: traxn.fiatTransactionStatus,
+      withdrawlAmount: Math.abs(traxn.amount),
+      withdrawlStatus: traxn
+      .fiatTransactionStatus,
       RefID: traxn.txnRefID,
     }));
     setFiatTraxnHistoryRows(rows);
@@ -493,13 +493,18 @@ export default function WithDraw() {
       );
       toggleMessageModal();
       toggleRemarkModal();
+      setRemark("");
+      setTxnRefId("");
       setMessage(`Transaction completed with an action ${action}`);
-      await getListOfFiatTraxn();
+      await fetchAllFiatTxn();
     } catch (err) {
       toggleMessageModal();
       toggleRemarkModal();
-      setMessage(err.response.data.ErrorMessage);
-      await getListOfFiatTraxn();
+      setRemark("");
+      setTxnRefId("");
+      console.log(err.response?.data.ErrorMessage);
+      // setMessage(err.response.data.ErrorMessage);
+      await fetchAllFiatTxn();
     }
   };
 
@@ -689,6 +694,7 @@ export default function WithDraw() {
         open={remarkModal}
         onClose={() => {
           setRemark("");
+          setTxnRefId("");
           toggleRemarkModal();
         }}
       >
