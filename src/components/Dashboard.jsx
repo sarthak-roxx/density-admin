@@ -58,6 +58,7 @@ export default function Dashboard() {
         setShowInfoMessage(res.data.message);
         toggleInfoModal();
         toggleChangeAppVerModal();
+        getAppVer();
       })
       .catch((err) => {
         setShowInfoMessage(err.response.data.ErrorMessage);
