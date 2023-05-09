@@ -1,12 +1,26 @@
 export const getBase =() => {
+  let appUrl;
+  let apiUrl; 
   switch( import.meta.env.VITE_BUILD_TYPE){
-    case "development":
-      return "https://admin-dev.density.exchange";
-    case "production":
-      return "https://admin-pro.density.exchange";
-    case "local":
-      return "https://localhost:3000";
-    default:
-      return "https://localhost:3000";
+  case "development":
+    appUrl= "https://dev-app-admin.density.exchange";
+    apiUrl= "https://api-dev-admin.density.exchange";
+    break;
+  case "production":
+    appUrl= "https://app-admin.density.exchange";
+    apiUrl= "https://api-admin.density.exchange";
+    break;
+  case "local":
+    appUrl= "https://localhost:3000";
+    apiUrl= "https://api-dev-admin.density.exchange";
+    break;
+  default:
+    appUrl= "https://localhost:3000";
+    apiUrl= "https://api-dev-admin.density.exchange";
+    break;
   }
-} 
+  return {
+    appUrl,
+    apiUrl
+  };
+};

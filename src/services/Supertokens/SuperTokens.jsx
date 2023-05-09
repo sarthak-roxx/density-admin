@@ -6,8 +6,8 @@ export default function SuperTokensMain() {
   SuperTokens.init({
     appInfo: {
       appName: "density-admin",
-      apiDomain: "https://api-dev-admin.density.exchange",
-      websiteDomain: getBase(),
+      apiDomain: getBase().apiUrl,
+      websiteDomain: getBase().appUrl,
       apiBasePath: "/admin/auth",
       websiteBasePath: "/admin/auth",
     },

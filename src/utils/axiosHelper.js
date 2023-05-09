@@ -1,10 +1,11 @@
 /* eslint-disable  */
 
 import axios from "axios";
+import { getBase } from "../urls";
 
 const axiosInstance = axios.create({
   withCredentials: true,
-  baseURL: "https://api-dev-admin.density.exchange",
+  baseURL: getBase().apiUrl,
 });
 
 axiosInstance.defaults.headers.common.accept = "*/*";
