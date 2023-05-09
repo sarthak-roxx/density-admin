@@ -463,11 +463,13 @@ export default function DepositRecords() {
       );
       toggleMessageModal();
       toggleRemarkModal();
+      setRemark("");
       setMessage(`Transaction completed with an action ${action}`);
       await fetchAllFiatTxn();
     } catch (err) {
       toggleMessageModal();
       toggleRemarkModal();
+      setRemark("");
       setMessage(err.response.data.ErrorMessage);
       await fetchAllFiatTxn();
     }

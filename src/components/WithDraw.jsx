@@ -440,7 +440,10 @@ export default function WithDraw() {
       admin: log.adminName,
       timestamp: new Date(log.createdAt).toLocaleDateString(),
       action: log.action.log.ApproveAction == 1 ? "Approve" : "Reject",
-      user: log.userFirstName + " " + log.userLastName,
+      user:
+        log.userFirstName && log.userLastName
+          ? log.userFirstName + " " + log.userLastName
+          : "---",
       phone: log.phone,
       remarks: log.action.log.Remarks?.join(" "),
       amount: log.action.log.Amount,
@@ -463,8 +466,7 @@ export default function WithDraw() {
       date: new Date(traxn.createdAt).toLocaleDateString(),
       time: new Date(traxn.createdAt).toLocaleTimeString(),
       withdrawlAmount: Math.abs(traxn.amount),
-      withdrawlStatus: traxn
-      .fiatTransactionStatus,
+      withdrawlStatus: traxn.fiatTransactionStatus,
       RefID: traxn.txnRefID,
     }));
     setFiatTraxnHistoryRows(rows);
@@ -502,8 +504,8 @@ export default function WithDraw() {
       toggleRemarkModal();
       setRemark("");
       setTxnRefId("");
-      console.log(err.response?.data.ErrorMessage);
-      // setMessage(err.response.data.ErrorMessage);
+      // console.log(err.response?.data.ErrorMessage);
+      setMessage(err.response.data.ErrorMessage);
       await fetchAllFiatTxn();
     }
   };

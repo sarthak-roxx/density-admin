@@ -40,13 +40,13 @@ export default function Dashboard() {
   const toggleInfoModal = () => setShowInfoModal(!showInfoModal);
   const toggleChangeAppVerModal = () =>
     setChangeAppVerModal(!changeAppVerModal);
-
+  const [showAppVersion, setShowAppVersion] = useState("");
   const [showInfoMessage, setShowInfoMessage] = useState("");
   // const [appVer, setAppVer] = useState();
 
   const getAppVer = async () => {
-    const { data } = await makeGetReq("/mobile/version?osType=ANDROID");
-    console.log(data);
+    const data = await makeGetReq("v1/mobile/version?osType=ANDROID");
+    setShowAppVersion(data?.version);
   };
 
   const changeAppVersion = async () => {
@@ -147,7 +147,7 @@ export default function Dashboard() {
                       App Version
                     </Typography>
                     <Typography variant="h1" mb={1}>
-                      29
+                      {showAppVersion}
                     </Typography>
                   </CardContent>
                 </Card>
