@@ -1,13 +1,13 @@
 import SuperTokens from "supertokens-auth-react";
 import ThirdParty, { Google } from "supertokens-auth-react/recipe/thirdparty";
 import Session from "supertokens-auth-react/recipe/session";
-
+import { getBase } from "../../urls";
 export default function SuperTokensMain() {
   SuperTokens.init({
     appInfo: {
       appName: "density-admin",
-      apiDomain: "https://api-dev-admin.density.exchange",
-      websiteDomain: "https://localhost:3000",
+      apiDomain: getBase().apiUrl,
+      websiteDomain: getBase().appUrl,
       apiBasePath: "/admin/auth",
       websiteBasePath: "/admin/auth",
     },

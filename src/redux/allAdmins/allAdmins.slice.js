@@ -23,7 +23,7 @@ const admins = createSlice({
       }
     },
     addAdminId(state, action) {
-      console.log(action.payload);
+      // console.log(action.payload);
       state.currentAdminId = action.payload;
     },
   },

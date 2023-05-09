@@ -389,7 +389,7 @@ export default function WithDraw() {
   ];
 
   const changePagination = (event) => {
-    console.log(event);
+    // console.log(event);
     setPaginationModal({ page: event.page, pageSize: event.pageSize });
   };
 

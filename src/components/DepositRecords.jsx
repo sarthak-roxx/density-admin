@@ -354,7 +354,7 @@ export default function DepositRecords() {
   ];
 
   const changePagination = (event) => {
-    console.log(event);
+    // console.log(event);
     setPaginationModal({ page: event.page, pageSize: event.pageSize });
   };
 
@@ -369,7 +369,7 @@ export default function DepositRecords() {
       }&start=${paginationModal.page * paginationModal.pageSize}`
     );
 
-    console.log(data);
+    // console.log(data);
     const rows = data
       .map((traxn) => ({
         id: traxn.id,

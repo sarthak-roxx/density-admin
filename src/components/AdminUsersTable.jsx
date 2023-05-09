@@ -250,7 +250,7 @@ export default function AdminUsersTable() {
       adminID: adminId,
       roles,
     });
-    console.log(data);
+    // console.log(data);
   };
 
   const makePermissionPostReq = async () => {

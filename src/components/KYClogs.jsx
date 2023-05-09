@@ -70,7 +70,7 @@ const KYClogs = () => {
           <>
             <ShowButton
               onClick={() => {
-                console.log("params.id", params.id);
+                // console.log("params.id", params.id);
                 navigate(`/kycData/${params.id}`);
               }}
             >
@@ -102,7 +102,7 @@ const KYClogs = () => {
 
   const {page,pageSize} =paginationModal;
   const fetchLogs = useCallback(async () =>{
-    console.log(session);
+    // console.log(session);
     if(!session.userId) return;
     const response = await makeGetReq(`/v1/admin-logs?actionType=KYC&pageNo=${page+1}&size=${pageSize}&adminID=${session.userId}`)
     // setLogs(response.data);
