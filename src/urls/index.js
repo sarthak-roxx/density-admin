@@ -11,11 +11,11 @@ export const getBase =() => {
     apiUrl= "https://api-admin.density.exchange";
     break;
   case "local":
-    appUrl= "https://localhost:3000";
+    appUrl= "http://localhost:3000";
     apiUrl= "https://api-dev-admin.density.exchange";
     break;
   default:
-    appUrl= "https://localhost:3000";
+    appUrl= "http://localhost:3000";
     apiUrl= "https://api-dev-admin.density.exchange";
     break;
   }
