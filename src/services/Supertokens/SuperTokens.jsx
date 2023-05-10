@@ -2,6 +2,8 @@ import SuperTokens from "supertokens-auth-react";
 import ThirdParty, { Google } from "supertokens-auth-react/recipe/thirdparty";
 import Session from "supertokens-auth-react/recipe/session";
 import { getBase } from "../../urls";
+
+
 export default function SuperTokensMain() {
   SuperTokens.init({
     appInfo: {
@@ -32,6 +34,11 @@ export default function SuperTokensMain() {
           if (ctx.action === "SESSION_ALREADY_EXISTS")
             console.log("Already exists");
           else if (ctx.action === "SUCCESS") console.log("Success");
+        },
+        getRedirectionURL: async (ctx) => {
+          if (ctx.action === "SUCCESS") {
+            return "/dashboard";
+          }
         },
       }),
       Session.init(),

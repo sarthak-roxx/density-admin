@@ -6,6 +6,7 @@ import { densityAdminRoutes } from "./routes";
 import { SessionAuth } from "supertokens-auth-react/recipe/session";
 import Navbar from "../components/Navbar";
 import Sidebar from "../components/Sidebar";
+import SignUp from "../components/SignUp";
 
 export default function AppRouter() {
   return (
@@ -13,6 +14,14 @@ export default function AppRouter() {
       <BrowserRouter>
         <Routes>
           {getSuperTokensRoutesForReactRouterDom(routerConfig)}
+          <Route
+            path="/"
+            element={
+              <SessionAuth requireAuth={false}>
+                <SignUp />
+              </SessionAuth>
+            }
+          />
           <Route
             element={
               <>
