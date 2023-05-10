@@ -22,7 +22,7 @@ export default function SignUp() {
       >
         <Box width="50%">
           <Button fullWidth onClick={onLogin} variant="contained">
-            Sign In
+            Get In
           </Button>
         </Box>
       </Box>
