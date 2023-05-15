@@ -146,6 +146,7 @@ export default function KycUsers() {
   const navigate = useNavigate();
   const [filterByKycStatus, setFilterByKycStatus] = useState("");
   const [filterByEmail, setFilterByEmail] = useState("");
+  const [bankDetail, setBankDetail] = useState([]);
   const [userRows, setUserRows] = useState([]);
   const [bankModal, setBankModal] = useState(false);
   const [paginationModal, setPaginationModal] = useState({
@@ -254,6 +255,7 @@ export default function KycUsers() {
             <ShowButton
               onClick={async () => {
                 await fetchBankDetailsByID(params.row.id);
+                toggleBankModal();
               }}
             >
               Bank Details
@@ -341,8 +343,9 @@ export default function KycUsers() {
   }, [mobilePaginationModal.page, mobilePaginationModal.pageSize]);
 
   const fetchBankDetailsByID = async (userID) => {
-    const { data } = await makeGetReq(`v1/bank/accounts?userID=${userID}`);
+    const { data } = await makeGetReq(`v1/bank-accounts?userID=${userID}`);
     console.log(data);
+    setBankDetail(data);
   };
 
   useEffect(() => {
@@ -513,13 +516,17 @@ export default function KycUsers() {
               <Typography color="grey" variant="h4">
                 Account No.:
               </Typography>
-              <Typography variant="h4">XXXX XXXX XXXX X983</Typography>
+              <Typography variant="h4">
+                {bankDetail.length !== 0 ? bankDetail[0]?.accountNumber : "---"}
+              </Typography>
             </Box>
             <Box display="flex" gap={1}>
               <Typography color="grey" variant="h4">
                 IFSC No.:
               </Typography>
-              <Typography variant="h4">SBIN934343434343</Typography>
+              <Typography variant="h4">
+                {bankDetail.length !== 0 ? bankDetail[0]?.IFSC : "---"}
+              </Typography>
             </Box>
           </Box>
         </Box>
