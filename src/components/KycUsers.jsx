@@ -32,6 +32,7 @@ import { MobileView, BrowserView } from "react-device-detect";
 import FilterComponent from "./FilterComponent";
 import dayjs from "dayjs";
 import KYClogs from "./KYClogs";
+import {updateKYVStatus} from "../utils/updateKYCStatus";
 
 const ShowButton = styled(Button)(({ theme }) => ({
   backgroundColor: "lightblue",
@@ -169,6 +170,8 @@ export default function KycUsers() {
   const [showRemarkModal, setShowRemarkModal] = useState(false);
   const [remark, setRemark] = useState("");
   const [errorMessage, setErrorMessage] = useState(false);
+  const [userId, setUserId] = useState(0);
+  const [action, setAction] = useState("");
 
   const toggleBankModal = () => setBankModal(!bankModal);
 
@@ -227,7 +230,6 @@ export default function KycUsers() {
           <>
             <ShowButton
               onClick={() => {
-                // console.log(params);
                 navigate(`/kycData/${params.id}`, {
                   state: {
                     email: params?.row?.email,
@@ -277,7 +279,7 @@ export default function KycUsers() {
       renderCell: (params) => {
         return (
           <>
-            <ApproveButton onClick={() => setShowRemarkModal(true)}>Approve</ApproveButton>
+            <ApproveButton onClick={() => {setUserId(params.row.id); setShowRemarkModal(true); setAction("VERIFIED");}}>Approve</ApproveButton>
           </>
         );
       },
@@ -290,7 +292,7 @@ export default function KycUsers() {
       renderCell: (params) => {
         return (
           <>
-            <RejectButton onClick={() => setShowRemarkModal(true)}>Reject</RejectButton>
+            <RejectButton onClick={() => {setUserId(params.row.id); setShowRemarkModal(true); setAction("FAILED");}}>Reject</RejectButton>
           </>
         );
       },
@@ -355,17 +357,19 @@ export default function KycUsers() {
 
   const handleConfirmationModal = (option) => {
     if(option === 'no') {
-      setShowRemarkModal(false);
       setErrorMessage(false);
       setRemark(""); 
+      setUserId(0);
+      setShowRemarkModal(false);
     } else {
         if(remark === "") {
           setErrorMessage(true);
           setRemark("");
         } else {
-          setShowRemarkModal(false); 
+          updateKYVStatus(action ,userId, remark);
           setErrorMessage(false);
           setRemark("");
+          setShowRemarkModal(false); 
         }
     }
   }
