@@ -1,7 +1,6 @@
 import {
   Card,
   Box,
-  Typography,
   CardContent,
   useMediaQuery,
   TextField,
@@ -17,6 +16,7 @@ import { shades } from "../utils/theme";
 import { BrowserView } from "react-device-detect";
 import { makeGetReq, makePostReq } from "../utils/axiosHelper";
 import InfoModal from "./InfoModal";
+import DashboardCards from "./DashboardCards";
 
 const changeAppVerModalStyles = {
   position: "absolute",
@@ -86,72 +86,23 @@ export default function Dashboard() {
               <Box
                 display="flex"
                 flexDirection={isMobile ? "row" : "column"}
-                justifyContent="space-between"
+                justifyContent={isMobile ? "center" : "space-around"}
+                alignItems="center"
               >
-                {/* <Card sx={{ minWidth: 200 }}>
-                  <CardContent>
-                    <Typography variant="h4" gutterBottom mb={5}>
-                      Total Sign Up Users
-                    </Typography>
-                    <Typography variant="h1">197</Typography>
-                  </CardContent>
-                </Card>
-                <Card sx={{ minWidth: 200 }}>
-                  <CardContent>
-                    <Typography variant="h4" gutterBottom mb={5}>
-                      Total Success KYC
-                    </Typography>
-                    <Typography variant="h1">85</Typography>
-                  </CardContent>
-                </Card>
-                <Card sx={{ minWidth: 240 }}>
-                  <CardContent>
-                    <Typography variant="h4" gutterBottom mb={5}>
-                      Total Pending KYC
-                    </Typography>
-                    <Typography variant="h1">46</Typography>
-                  </CardContent>
-                </Card>
-                <Card sx={{ minWidth: 200 }}>
-                  <CardContent>
-                    <Typography variant="h4" gutterBottom mb={5}>
-                      Total Failed KYC
-                    </Typography>
-                    <Typography variant="h1" mb={1}>
-                      44
-                    </Typography>
-                  </CardContent>
-                </Card>
-                <Card sx={{ minWidth: 200 }}>
-                  <CardContent>
-                    <Typography variant="h4" gutterBottom mb={5}>
-                      Total Deposit Request
-                    </Typography>
-                    <Typography variant="h1" mb={1}>
-                      96
-                    </Typography>
-                  </CardContent>
-                </Card>
-                <Card sx={{ minWidth: 200 }}>
-                  <CardContent>
-                    <Typography variant="h4" gutterBottom mb={5}>
-                      Total Withdraw Request
-                    </Typography>
-                    <Typography variant="h1" mb={1}>
-                      29
-                    </Typography>
-                  </CardContent>
-                </Card> */}
-                <Card sx={{ minWidth: 200 }}>
-                  <CardContent>
-                    <Typography variant="h4" gutterBottom mb={5}>
-                      App Version
-                    </Typography>
-                    <Typography variant="h1" mb={1}>
-                      {showAppVersion}
-                    </Typography>
-                  </CardContent>
-                </Card>
+                <DashboardCards title="App Version" content={showAppVersion} backgroundColor="#D1E9FC" />
+                <DashboardCards title="Total Sign Up Users" content="197" backgroundColor="#FFF7CD"/>
+                <DashboardCards title="Total Success KYC" content="85" backgroundColor="#FFE7D9"/>
+                <DashboardCards title="Total Pending KYC" content="46" backgroundColor="#FFF7CD"/>
+              </Box>
+              <Box
+                display="flex"
+                flexDirection={isMobile ? "row" : "column"}
+                justifyContent="space-around"
+                alignItems="center"
+              >
+                <DashboardCards title="Total Failed KYC" content="46" backgroundColor="#D1E9FC"/>
+                <DashboardCards title="Total Deposit Request" content="46" backgroundColor="#FFE7D9"/>
+                <DashboardCards title="Total Withdraw Request" content="46" backgroundColor="#D1E9FC"/>
               </Box>
             </CardContent>
           </Card>

@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { DataGrid } from "@mui/x-data-grid";
 import { styled } from "@mui/material/styles";
 import CloseIcon from "@mui/icons-material/Close";
+import ConfirmationRemarkModal from "./ConfirmationRemarkModal";
 // import useSWR from "swr";
 import {
   Box,
@@ -165,6 +166,10 @@ export default function KycUsers() {
   const [pageID, setPageID] = useState(null);
   const [nextPageID, setNextPageID] = useState(null);
 
+  const [showRemarkModal, setShowRemarkModal] = useState(false);
+  const [remark, setRemark] = useState("");
+  const [errorMessage, setErrorMessage] = useState(false);
+
   const toggleBankModal = () => setBankModal(!bankModal);
 
   const usersColumns = [
@@ -272,7 +277,7 @@ export default function KycUsers() {
       renderCell: (params) => {
         return (
           <>
-            <ApproveButton onClick={toggleBankModal}>Approve</ApproveButton>
+            <ApproveButton onClick={() => setShowRemarkModal(true)}>Approve</ApproveButton>
           </>
         );
       },
@@ -285,7 +290,7 @@ export default function KycUsers() {
       renderCell: (params) => {
         return (
           <>
-            <RejectButton onClick={toggleBankModal}>Reject</RejectButton>
+            <RejectButton onClick={() => setShowRemarkModal(true)}>Reject</RejectButton>
           </>
         );
       },
@@ -347,6 +352,23 @@ export default function KycUsers() {
     console.log(data);
     setBankDetail(data);
   };
+
+  const handleConfirmationModal = (option) => {
+    if(option === 'no') {
+      setShowRemarkModal(false);
+      setErrorMessage(false);
+      setRemark(""); 
+    } else {
+        if(remark === "") {
+          setErrorMessage(true);
+          setRemark("");
+        } else {
+          setShowRemarkModal(false); 
+          setErrorMessage(false);
+          setRemark("");
+        }
+    }
+  }
 
   useEffect(() => {
     fetchAllUsers();
@@ -498,6 +520,16 @@ export default function KycUsers() {
             }}
           /> */}
       </Box>
+
+      <ConfirmationRemarkModal
+				isOpen={showRemarkModal}
+				close={() => {setShowRemarkModal(false); setRemark(""); setErrorMessage(false);}}
+				primaryAction={() => handleConfirmationModal("yes")}
+        secondaryAction={() => handleConfirmationModal("no")}
+        remark={remark}
+        setRemark={(e) => setRemark(e.target.value)}
+        error={errorMessage}
+			/>
 
       <Modal open={bankModal} onClose={toggleBankModal}>
         <Box sx={style}>
