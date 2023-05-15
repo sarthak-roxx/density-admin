@@ -7,7 +7,7 @@ import { useTheme } from "@mui/material/styles";
 import densityLogo from "../footerlogo.svg";
 
 const sidabarItems = [
-  { listText: "Dashboard", listRoute: "/" },
+  { listText: "Dashboard", listRoute: "/dashboard" },
   {
     listText: "KYC Details",
     listRoute: "/kycUsers",

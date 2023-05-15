@@ -2,6 +2,9 @@
 import React, { useEffect, useState } from "react";
 import { styled } from "@mui/material/styles";
 import {
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
   Box,
   Button,
   FormControl,
@@ -16,6 +19,7 @@ import {
   Select,
   MenuItem,
   IconButton,
+  useMediaQuery,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import { useDispatch, useSelector } from "react-redux";
@@ -93,6 +97,7 @@ const RevokeRoleButton = styled(Box)(({ theme }) => ({
 }));
 
 export default function AdminUsersTable() {
+  const isMobile = useMediaQuery("(min-width:768px)");
   const dispatch = useDispatch();
   const admins = useSelector((state) => state.admins.admins);
   const [selectedRoleForRevoke, setSelectedRoleForRevoke] = useState([]);
@@ -320,34 +325,90 @@ export default function AdminUsersTable() {
             Create a role
           </Button>
         </Box>
-        <Box height={650}>
-          <DataGrid
-            sx={{
-              ".MuiDataGrid-columnHeaderCheckbox": {
-                display: "none",
-              },
-              "& .MuiDataGrid-cellCheckbox": {
-                display: "none",
-              },
-              "&.MuiDataGrid-root .MuiDataGrid-cell:focus-within": {
-                outline: "none !important",
-              },
-              border: 2,
-            }}
-            rows={adminRows}
-            columns={adminColumns}
-            initialState={{
-              pagination: {
-                paginationModel: {
-                  pageSize: 10,
+        {isMobile ? (
+          <Box height={650}>
+            <DataGrid
+              sx={{
+                ".MuiDataGrid-columnHeaderCheckbox": {
+                  display: "none",
                 },
-              },
-            }}
-            pageSizeOptions={[10]}
-            checkboxSelection
-            disableRowSelectionOnClick
-          />
-        </Box>
+                "& .MuiDataGrid-cellCheckbox": {
+                  display: "none",
+                },
+                "&.MuiDataGrid-root .MuiDataGrid-cell:focus-within": {
+                  outline: "none !important",
+                },
+                border: 2,
+              }}
+              rows={adminRows}
+              columns={adminColumns}
+              initialState={{
+                pagination: {
+                  paginationModel: {
+                    pageSize: 10,
+                  },
+                },
+              }}
+              pageSizeOptions={[10]}
+              checkboxSelection
+              disableRowSelectionOnClick
+            />
+          </Box>
+        ) : (
+          <>
+            {adminRows?.map((admin) => (
+              <Accordion sx={{ border: "1px solid black" }} key={admin.id}>
+                <AccordionSummary>
+                  <Typography variant="h4">{admin.name}</Typography>
+                </AccordionSummary>
+                <AccordionDetails>
+                  <Typography variant="h4">Name: {admin.name}</Typography>
+                  <Typography variant="h4">Email: {admin.email}</Typography>
+                  <Typography variant="h4">
+                    SuperAdmin: {admin.superAdmin ? "Yes" : "No"}
+                  </Typography>
+                  <Box mt={1}>
+                    <Typography variant="h4">Roles:</Typography>
+                    <Roles>
+                      {admin.role.map((r, idx) => (
+                        <RoleTile key={idx}>{r.Role}</RoleTile>
+                      ))}
+                    </Roles>
+                  </Box>
+                  <Box mt={1}>
+                    <Typography variant="h4">Edit</Typography>
+                    <Box display="flex" gap="2%">
+                      <EditButton
+                        onClick={() => {
+                          toggleAssignRoleModal();
+                          setSelectedAdminId(admin.id);
+                        }}
+                      >
+                        Assign Role
+                      </EditButton>
+                      <EditButton
+                        onClick={() => {
+                          setSelectedAdmin(admin);
+                          toggleEditRoleModal();
+                        }}
+                      >
+                        Revoke Role
+                      </EditButton>
+                      <DeleteButton
+                        onClick={async () => {
+                          await deleteAdmin(admin.id);
+                          window.location.reload();
+                        }}
+                      >
+                        delete
+                      </DeleteButton>
+                    </Box>
+                  </Box>
+                </AccordionDetails>
+              </Accordion>
+            ))}
+          </>
+        )}
       </Box>
 
       {/* Modals */}

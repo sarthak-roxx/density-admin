@@ -1,6 +1,14 @@
 /* eslint-disable no-unused-vars */
 import React, { useCallback, useEffect, useState } from "react";
-import { Box, Button, Modal, TextField, Typography } from "@mui/material";
+import {
+  Box,
+  Button,
+  IconButton,
+  Modal,
+  TextField,
+  Typography,
+  useMediaQuery,
+} from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import { styled } from "@mui/material/styles";
 // import axiosInstance from "../utils/axiosHelper";
@@ -13,6 +21,12 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import dayjs from "dayjs";
+import Accordion from "@mui/material/Accordion";
+import AccordionSummary from "@mui/material/AccordionSummary";
+import AccordionDetails from "@mui/material/AccordionDetails";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 
 const ViewButton = styled(Button)(({ theme }) => ({
   backgroundColor: "lightblue",
@@ -35,13 +49,13 @@ const style = {
   top: "50%",
   left: "50%",
   transform: "translate(-50%, -50%)",
-  width: "90%",
-  height: "70%",
+  width: "95%",
+  height: "90%",
   bgcolor: "background.paper",
   border: "2px solid #000",
   borderRadius: "5px",
   boxShadow: 24,
-  p: 4,
+  p: 1,
 };
 const csvModalStyle = {
   position: "absolute",
@@ -62,13 +76,13 @@ const remarkModalStyles = {
   top: "50%",
   left: "50%",
   transform: "translate(-50%, -50%)",
-  width: "40%",
-  height: "20%",
+  width: "60vw",
+  height: "35vh",
   bgcolor: "background.paper",
   border: "2px solid #000",
   borderRadius: "5px",
   boxShadow: 24,
-  p: 4,
+  p: 2,
 };
 
 const messageModalStyles = {
@@ -84,14 +98,52 @@ const messageModalStyles = {
   boxShadow: 24,
   p: 4,
 };
+const messageModalStylesMobile = {
+  position: "absolute",
+  top: "15%",
+  left: "50%",
+  transform: "translate(-50%, -50%)",
+  width: "40%",
+  height: "20%",
+  bgcolor: "#101010",
+  border: "2px solid #000",
+  borderRadius: "5px",
+  boxShadow: 24,
+  p: 1,
+};
+
+const mobileDepositColumns = [
+  {
+    field: "deposit-rec",
+    headerName: "Deposit Records",
+    width: "100",
+  },
+];
 
 export default function DepositRecords() {
   // const { userId: adminID } = useSessionContext();
-
+  const [fiatTraxnUserID, setFiatTraxnUserID] = useState(null);
+  const [enteredRefId, setEnteredRefId] = useState("");
   const [message, setMessage] = useState("");
   const [actionType, setActionType] = useState("");
   const [deposit, setDeposit] = useState(null);
 
+  const [totalData, setTotalData] = useState(null);
+  const [pageID, setPageID] = useState(null);
+  const [nextPageID, setNextPageID] = useState(null);
+
+  const [totalLogData, setTotalLogData] = useState(null);
+  const [logPageID, setLogPageID] = useState(null);
+  const [logNextPageID, setLogNextPageID] = useState(null);
+
+  const [traxnHistoryAccordionRows, setTraxnHistoryAccordionRows] = useState(
+    []
+  );
+  const [totalTraxnHistory, setTotalTraxnHistory] = useState(null);
+  const [traxnHistoryPageID, setTraxnHistoryID] = useState(null);
+  const [traxnHistoryNextPageID, setTraxnHistoryNextPageID] = useState(null);
+
+  const isMobile = useMediaQuery("(min-width:768px)");
   const [csvFormData, setCsvFormData] = useState({
     traxnId: "",
     userId: "",
@@ -104,6 +156,7 @@ export default function DepositRecords() {
     //   .toLocaleDateString(),
   });
 
+  const [selectedRefNo, setSelectedRefNo] = useState("");
   const [queryCsvModal, setQueryCsvModal] = useState(false);
   const toggleQueryCsvModal = () => setQueryCsvModal(!queryCsvModal);
 
@@ -111,10 +164,25 @@ export default function DepositRecords() {
   const toggleMessageModal = () => setMessageModal(!messageModal);
 
   const [fiatTraxnHistoryRows, setFiatTraxnHistoryRows] = useState([]);
+  const [AccordionRows, setAccordionRows] = useState([]);
+  const [logAccordionRows, setLogAccordionRows] = useState([]);
 
   const [paginationModal, setPaginationModal] = useState({
     page: 0,
     pageSize: 5,
+  });
+
+  const [mobilePaginationModal, setMobilePaginationModal] = useState({
+    page: 0,
+    pageSize: 10,
+  });
+  const [mobileLogPaginationModal, setMobileLogPaginationModal] = useState({
+    page: 0,
+    pageSize: 10,
+  });
+  const [mobileFiatTraxnByIdModal, setMobileFiatTraxnByIdModal] = useState({
+    page: 0,
+    pageSize: 8,
   });
   const [totalRows, setTotalRows] = useState(0);
   const [depositRows, setDepositRows] = useState([]);
@@ -126,6 +194,7 @@ export default function DepositRecords() {
   const [totalDepositLogRows, setTotalDepositLogRows] = useState(0);
 
   const [fiatTraxns, setFiatTraxns] = useState([]);
+  const [fiatTraxnsMobile, setFiatTraxnsMobile] = useState([]);
   const [transactionHistoryModal, setTransactionHistoryModal] = useState(false);
   const toggleViewTransactionModal = () =>
     setTransactionHistoryModal(!transactionHistoryModal);
@@ -220,7 +289,7 @@ export default function DepositRecords() {
       width: 150,
     },
     {
-      field: "RefID",
+      field: "redactedRefID",
       headerName: "Reference Number",
       cellClassName: "kyc-row-style",
       headerClassName: "kyc-column-header",
@@ -262,8 +331,8 @@ export default function DepositRecords() {
         return (
           <>
             <ApproveButton
-              disabled={params.row.depositStatus == "SUCCESS"}
               onClick={() => {
+                setSelectedRefNo(params.row.RefID);
                 setActionType("Approve");
                 setDeposit({
                   UserID: params.row.UserID,
@@ -274,14 +343,6 @@ export default function DepositRecords() {
                   ActionType: params.row.TraxnType,
                 });
                 toggleRemarkModal();
-                // processTraxn(
-                //   params.row.UserID,
-                //   "approve",
-                //   params.row.RefID,
-                //   params.row.FiatTxnID,
-                //   params.row.depositAmount + ""
-                // );
-                // await fetchAllLogs();
               }}
             >
               Approve
@@ -299,9 +360,9 @@ export default function DepositRecords() {
         return (
           <>
             <RejectButton
-              disabled={params.row.depositStatus == "SUCCESS"}
               onClick={() => {
                 setActionType("Reject");
+                setSelectedRefNo(params.row.RefID);
                 setDeposit({
                   UserID: params.row.UserID,
                   action: "reject",
@@ -336,7 +397,7 @@ export default function DepositRecords() {
     {
       field: "RefID",
       headerClassName: "kyc-column-header",
-      headerName: "Reference ID",
+      headerName: "Reference Number",
       width: 300,
     },
     {
@@ -353,8 +414,18 @@ export default function DepositRecords() {
     },
   ];
 
+  const mobileDepositRows = [
+    {
+      id: 1,
+      "deposit-rec": "one",
+    },
+    {
+      id: 2,
+      "deposit-rec": "two",
+    },
+  ];
+
   const changePagination = (event) => {
-    // console.log(event);
     setPaginationModal({ page: event.page, pageSize: event.pageSize });
   };
 
@@ -362,37 +433,77 @@ export default function DepositRecords() {
     setDepositPaginationModal({ page: event.page, pageSize: event.pageSize });
   };
 
+  const fetchAllFiatTxnMobile = useCallback(async () => {
+    const { data, total, pageID, nextPageID } = await makeGetReq(
+      `v1/fiat/query-fiat-transaction?type=INR_DEPOSIT&size=${
+        mobilePaginationModal.pageSize
+      }&start=${
+        mobilePaginationModal.page * mobilePaginationModal.pageSize
+      }&status=STARTED`
+    );
+    const rows = data?.map((traxn) => ({
+      id: traxn.id,
+      userName:
+        traxn.userFirstName && traxn.userLastName
+          ? traxn.userFirstName + " " + traxn.userLastName
+          : "---",
+      depositAmount: traxn.amount,
+      depositStatus: traxn.fiatTransactionStatus,
+      bankAccNo: traxn.userBankAccount,
+      email: traxn.userEmail,
+      date: new Date(traxn.createdAt).toLocaleDateString(),
+      time: new Date(traxn.createdAt).toLocaleTimeString(),
+      FiatTxnID: traxn.txnID,
+      RefID: traxn.txnRefID,
+      redactedRefID: redactString(traxn.txnRefID),
+      UserID: traxn.userID,
+      TraxnType: traxn.fiatTransactionType,
+    }));
+    setFiatTraxnsMobile(rows);
+    setTotalData(total);
+    setPageID(pageID);
+    setNextPageID(nextPageID);
+  }, [mobilePaginationModal.page, mobilePaginationModal.pageSize]);
+
   const fetchAllFiatTxn = useCallback(async () => {
     const { data, total } = await makeGetReq(
       `v1/fiat/query-fiat-transaction?type=INR_DEPOSIT&size=${
         paginationModal.pageSize
-      }&start=${paginationModal.page * paginationModal.pageSize}`
+      }&start=${paginationModal.page * paginationModal.pageSize}&status=STARTED`
     );
 
     // console.log(data);
-    const rows = data
-      .map((traxn) => ({
-        id: traxn.id,
-        userName:
-          traxn.userFirstName && traxn.userLastName
-            ? traxn.userFirstName + " " + traxn.userLastName
-            : "---",
-        depositAmount: traxn.amount,
-        depositStatus: traxn.fiatTransactionStatus,
-        bankAccNo: traxn.userBankAccount,
-        email: traxn.userEmail,
-        date: new Date(traxn.createdAt).toLocaleDateString(),
-        time: new Date(traxn.createdAt).toLocaleTimeString(),
-        FiatTxnID: traxn.txnID,
-        RefID: traxn.txnRefID,
-        UserID: traxn.userID,
-        TraxnType: traxn.fiatTransactionType,
-      }))
-      .filter(
-        (traxn) =>
-          traxn.depositStatus !== "FAILED" && traxn.depositStatus !== "SUCCESS"
-      );
+    const rows = data?.map((traxn) => ({
+      id: traxn.id,
+      userName:
+        traxn.userFirstName && traxn.userLastName
+          ? traxn.userFirstName + " " + traxn.userLastName
+          : "---",
+      depositAmount: traxn.amount,
+      depositStatus: traxn.fiatTransactionStatus,
+      bankAccNo: traxn.userBankAccount,
+      email: traxn.userEmail,
+      date: new Date(traxn.createdAt).toLocaleDateString(),
+      time: new Date(traxn.createdAt).toLocaleTimeString(),
+      FiatTxnID: traxn.txnID,
+      RefID: traxn.txnRefID,
+      redactedRefID: redactString(traxn.txnRefID),
+      UserID: traxn.userID,
+      TraxnType: traxn.fiatTransactionType,
+    }));
 
+    const accRows = rows?.map((traxn) => ({
+      id: traxn.id,
+      "deposit-rec": (
+        <Accordion>
+          <AccordionSummary>
+            <h1>{traxn.email}</h1>
+          </AccordionSummary>
+        </Accordion>
+      ),
+    }));
+
+    setAccordionRows(accRows);
     setFiatTraxns(rows);
     setTotalRows(total);
   }, [paginationModal.page, paginationModal.pageSize]);
@@ -409,7 +520,10 @@ export default function DepositRecords() {
       admin: log.adminName,
       timestamp: new Date(log.createdAt).toLocaleDateString(),
       action: log.action.log.ApproveAction == 1 ? "Approve" : "Reject",
-      user: log.userFirstName + " " + log.userLastName,
+      user:
+        log.userFirstName && log.userLastName
+          ? log.userFirstName + " " + log.userLastName
+          : "---",
       phone: log.phone,
       remarks: log.action.log.Remarks?.join(" "),
       amount: log.action.log.Amount,
@@ -418,6 +532,31 @@ export default function DepositRecords() {
     setDepositRows(rows);
     setTotalDepositLogRows(total);
   }, [depositPaginationModal.page, depositPaginationModal.pageSize]);
+
+  const fetchAllLogsMobile = useCallback(async () => {
+    const { data, total, pageNo, nextPageNo } = await makeGetReq(
+      `v1/admin-logs?actionType=FIAT&size=${
+        mobileLogPaginationModal.pageSize
+      }&pageNo=${mobileLogPaginationModal.page + 1}`
+    );
+    const rows = data.map((log) => ({
+      id: log.logID,
+      admin: log.adminName === "" ? "---" : log.adminName,
+      timestamp: new Date(log.createdAt).toLocaleDateString(),
+      action: log.action.log.ApproveAction == 1 ? "Approve" : "Reject",
+      user:
+        log.userFirstName && log.userLastName
+          ? log.userFirstName + " " + log.userLastName
+          : "---",
+      phone: log.phone,
+      remarks: log.action.log.Remarks?.join(" "),
+      amount: log.action.log.Amount,
+    }));
+    setLogAccordionRows(rows);
+    setTotalLogData(total);
+    setLogPageID(pageNo);
+    setLogNextPageID(nextPageNo);
+  }, [mobileLogPaginationModal.page, mobileLogPaginationModal.pageSize]);
 
   const getFiatTraxnById = async (userId) => {
     const { data } = await makeGetReq(
@@ -438,6 +577,37 @@ export default function DepositRecords() {
     }));
     setFiatTraxnHistoryRows(rows);
   };
+
+  const getFiatTraxnByIdMobile = useCallback(async () => {
+    const { data, total, pageID, nextPageID } = await makeGetReq(
+      `v1/fiat/query-fiat-transaction?userID=${fiatTraxnUserID}&type=INR_DEPOSIT&size=${
+        mobileFiatTraxnByIdModal.pageSize
+      }&start=${
+        mobileFiatTraxnByIdModal.page * mobileFiatTraxnByIdModal.pageSize
+      }`
+    );
+    const rows = data.map((traxn) => ({
+      id: traxn.id,
+      userName:
+        traxn.userFirstName && traxn.userLastName
+          ? traxn.userFirstName + " " + traxn.userLastName
+          : "---",
+      email: traxn.userEmail,
+      date: new Date(traxn.createdAt).toLocaleDateString(),
+      time: new Date(traxn.createdAt).toLocaleTimeString(),
+      depositAmount: traxn.amount,
+      depositStatus: traxn.fiatTransactionStatus,
+      RefID: traxn.txnRefID,
+    }));
+    setTraxnHistoryAccordionRows(rows);
+    setTotalTraxnHistory(total);
+    setTraxnHistoryID(pageID);
+    setTraxnHistoryNextPageID(nextPageID);
+  }, [
+    mobileFiatTraxnByIdModal.page,
+    mobileFiatTraxnByIdModal.pageSize,
+    fiatTraxnUserID,
+  ]);
 
   const processTraxn = async (
     UserID,
@@ -466,24 +636,51 @@ export default function DepositRecords() {
       setRemark("");
       setMessage(`Transaction completed with an action ${action}`);
       await fetchAllFiatTxn();
+      await fetchAllFiatTxnMobile();
     } catch (err) {
       toggleMessageModal();
       toggleRemarkModal();
       setRemark("");
       setMessage(err.response.data.ErrorMessage);
       await fetchAllFiatTxn();
+      await fetchAllFiatTxnMobile();
     }
   };
+
+  const redactString = (refNo) => {
+    let str = "";
+    for (let i = 0; i < refNo.length - 3; ++i) {
+      str += "*";
+    }
+    return str + refNo.slice(-3);
+  };
+
+  console.log(fiatTraxns);
+
+  useEffect(() => {
+    fetchAllFiatTxnMobile();
+  }, [fetchAllFiatTxnMobile]);
+
+  useEffect(() => {
+    fetchAllLogsMobile();
+  }, [fetchAllLogsMobile]);
 
   useEffect(() => {
     fetchAllLogs();
     fetchAllFiatTxn();
   }, [fetchAllFiatTxn, fetchAllLogs]);
+
+  useEffect(() => {
+    getFiatTraxnByIdMobile();
+  }, [getFiatTraxnByIdMobile]);
+
   return (
     <>
       <Box mt={1} display="flex">
         <Box width="55%" display="flex" justifyContent="flex-end">
-          <Typography variant="h1">Deposit Records</Typography>
+          <Typography variant={isMobile ? "h1" : "h2"}>
+            Deposit Records
+          </Typography>
         </Box>
         <Box width="45%" display="flex" justifyContent="flex-end">
           <Button onClick={toggleQueryCsvModal} variant="contained">
@@ -491,98 +688,347 @@ export default function DepositRecords() {
           </Button>
         </Box>
       </Box>
-      <Box sx={{ height: 620, width: "100%", p: 1 }}>
-        <DataGrid
-          sx={{
-            ".MuiDataGrid-columnHeaderCheckbox": {
-              display: "none",
-            },
-            "& .MuiDataGrid-cellCheckbox": {
-              display: "none",
-            },
-            "&.MuiDataGrid-root .MuiDataGrid-cell:focus-within": {
-              outline: "none !important",
-            },
-            border: 2,
-          }}
-          rows={fiatTraxns}
-          columns={columns}
-          paginationModel={paginationModal}
-          rowCount={totalRows}
-          pageSizeOptions={[5, 10]}
-          paginationMode="server"
-          onPaginationModelChange={changePagination}
-          checkboxSelection
-          disableRowSelectionOnClick
-          isRowSelectable={() => false}
-        />
-      </Box>
-      <Box display="flex" justifyContent="center">
-        <Typography variant="h1">Deposit Logs</Typography>
-      </Box>
-      <Box display="flex" justifyContent="center">
-        <Box sx={{ height: 650, width: "100%", p: 1 }}>
-          <DataGrid
-            sx={{
-              ".MuiDataGrid-columnHeaderCheckbox": {
-                display: "none",
-              },
-              "& .MuiDataGrid-cellCheckbox": {
-                display: "none",
-              },
-              "&.MuiDataGrid-root .MuiDataGrid-cell:focus-within": {
-                outline: "none !important",
-              },
-              border: 2,
-            }}
-            rows={depositRows}
-            columns={depositLogs}
-            paginationModel={depositPaginationModal}
-            rowCount={totalDepositLogRows}
-            paginationMode="server"
-            pageSizeOptions={[5, 10]}
-            onPaginationModelChange={changePaginationLogs}
-            checkboxSelection
-            disableRowSelectionOnClick
-            isRowSelectable={() => false}
-          />
-        </Box>
-      </Box>
+
+      {isMobile ? (
+        <>
+          <Box sx={{ height: 620, width: "100%", p: 1 }}>
+            <DataGrid
+              sx={{
+                ".MuiDataGrid-columnHeaderCheckbox": {
+                  display: "none",
+                },
+                "& .MuiDataGrid-cellCheckbox": {
+                  display: "none",
+                },
+                "&.MuiDataGrid-root .MuiDataGrid-cell:focus-within": {
+                  outline: "none !important",
+                },
+                border: 2,
+              }}
+              rows={isMobile ? fiatTraxns : AccordionRows}
+              columns={isMobile ? columns : mobileDepositColumns}
+              paginationModel={paginationModal}
+              rowCount={totalRows}
+              pageSizeOptions={[5, 10]}
+              paginationMode="server"
+              onPaginationModelChange={changePagination}
+              checkboxSelection
+              disableRowSelectionOnClick
+              isRowSelectable={() => false}
+            />
+          </Box>
+          <Box display="flex" justifyContent="center">
+            <Typography variant="h1">Deposit Logs</Typography>
+          </Box>
+          <Box display="flex" justifyContent="center">
+            <Box sx={{ height: 650, width: "100%", p: 1 }}>
+              <DataGrid
+                sx={{
+                  ".MuiDataGrid-columnHeaderCheckbox": {
+                    display: "none",
+                  },
+                  "& .MuiDataGrid-cellCheckbox": {
+                    display: "none",
+                  },
+                  "&.MuiDataGrid-root .MuiDataGrid-cell:focus-within": {
+                    outline: "none !important",
+                  },
+                  border: 2,
+                }}
+                rows={depositRows}
+                columns={depositLogs}
+                paginationModel={depositPaginationModal}
+                rowCount={totalDepositLogRows}
+                paginationMode="server"
+                pageSizeOptions={[5, 10]}
+                onPaginationModelChange={changePaginationLogs}
+                checkboxSelection
+                disableRowSelectionOnClick
+                isRowSelectable={() => false}
+              />
+            </Box>
+          </Box>
+        </>
+      ) : (
+        <>
+          <Box sx={{ m: 1 }}>
+            {fiatTraxnsMobile?.map((traxn) => (
+              <Accordion sx={{ border: "1px solid black" }} key={traxn.id}>
+                <AccordionSummary>
+                  <Typography variant="h4">{traxn.email}</Typography>
+                </AccordionSummary>
+                <AccordionDetails>
+                  <Typography variant="h4">Date: {traxn.date}</Typography>
+                  <Typography variant="h4">Time: {traxn.time}</Typography>
+                  <Typography variant="h4">
+                    Username: {traxn.userName}
+                  </Typography>
+                  <Typography variant="h4">
+                    Deposit Amount: {traxn.depositAmount}
+                  </Typography>
+                  <Typography variant="h4">
+                    Deposit Status: {traxn.depositStatus}
+                  </Typography>
+                  <Typography variant="h4">
+                    Bank Account No: {traxn.bankAccNo}
+                  </Typography>
+                  <Typography variant="h4">
+                    Reference Number: {traxn.redactedRefID}
+                  </Typography>
+                  <Box mt={1}>
+                    <Button
+                      onClick={async () => {
+                        toggleViewTransactionModal();
+                        setFiatTraxnUserID(traxn.UserID);
+                        await getFiatTraxnByIdMobile(traxn.UserID);
+                      }}
+                      variant="contained"
+                      fullWidth
+                    >
+                      View Transaction history
+                    </Button>
+                  </Box>
+                  <Box mt={1} display="flex" justifyContent="space-between">
+                    <Box width="45%">
+                      <ApproveButton
+                        fullWidth
+                        onClick={() => {
+                          setSelectedRefNo(traxn.RefID);
+                          setActionType("Approve");
+                          setDeposit({
+                            UserID: traxn.UserID,
+                            action: "approve",
+                            RefID: traxn.RefID,
+                            FiatTxnID: traxn.FiatTxnID,
+                            Amount: traxn.depositAmount + "",
+                            ActionType: traxn.TraxnType,
+                          });
+                          toggleRemarkModal();
+                        }}
+                      >
+                        Approve
+                      </ApproveButton>
+                    </Box>
+                    <Box width="45%">
+                      <RejectButton
+                        fullWidth
+                        onClick={() => {
+                          setSelectedRefNo(traxn.RefID);
+                          setActionType("Reject");
+                          setDeposit({
+                            UserID: traxn.UserID,
+                            action: "reject",
+                            RefID: traxn.RefID,
+                            FiatTxnID: traxn.FiatTxnID,
+                            Amount: traxn.depositAmount + "",
+                            ActionType: traxn.TraxnType,
+                          });
+                          toggleRemarkModal();
+                        }}
+                      >
+                        Reject
+                      </RejectButton>
+                    </Box>
+                  </Box>
+                </AccordionDetails>
+              </Accordion>
+            ))}
+          </Box>
+
+          <Box display="flex" justifyContent="center">
+            <Box display="flex">
+              <IconButton
+                onClick={() => {
+                  if (pageID > 0)
+                    setMobilePaginationModal({
+                      ...mobilePaginationModal,
+                      page: mobilePaginationModal.page - 1,
+                    });
+                }}
+              >
+                <Box border="1px solid black" borderRadius={1}>
+                  <ArrowBackIcon fontSize="large" />
+                </Box>
+              </IconButton>
+              <IconButton
+                onClick={() => {
+                  if (pageID >= 0 && nextPageID < totalData)
+                    setMobilePaginationModal({
+                      ...mobilePaginationModal,
+                      page: mobilePaginationModal.page + 1,
+                    });
+                }}
+              >
+                <Box border="1px solid black" borderRadius={1}>
+                  <ArrowForwardIcon fontSize="large" />
+                </Box>
+              </IconButton>
+            </Box>
+          </Box>
+
+          <Box display="flex" justifyContent="center">
+            <Typography variant={isMobile ? "h1" : "h2"}>Logs</Typography>
+          </Box>
+
+          <Box sx={{ m: 1 }}>
+            {logAccordionRows?.map((log) => (
+              <Accordion sx={{ border: "1px solid black" }} key={log.id}>
+                <AccordionSummary>
+                  <Typography variant="h4">{log.admin}</Typography>
+                </AccordionSummary>
+                <AccordionDetails>
+                  <Typography variant="h4">
+                    Timestamp: {log.timestamp}
+                  </Typography>
+                  <Typography variant="h4">Admin: {log.admin}</Typography>
+                  <Typography variant="h4">Action: {log.action}</Typography>
+                  <Typography variant="h4">User: {log.user}</Typography>
+                  <Typography variant="h4">Amount: {log.amount}</Typography>
+                  <Typography variant="h4">Phone: {log.phone}</Typography>
+                  <Typography variant="h4">Remarks: {log.remarks}</Typography>
+                </AccordionDetails>
+              </Accordion>
+            ))}
+          </Box>
+          <Box display="flex" justifyContent="center">
+            <Box display="flex">
+              <IconButton
+                onClick={() => {
+                  if (logPageID > 1)
+                    setMobileLogPaginationModal({
+                      ...mobileLogPaginationModal,
+                      page: mobileLogPaginationModal.page - 1,
+                    });
+                }}
+              >
+                <Box border="1px solid black" borderRadius={1}>
+                  <ArrowBackIcon fontSize="large" />
+                </Box>
+              </IconButton>
+              <IconButton
+                onClick={() => {
+                  if (logNextPageID !== -1)
+                    setMobileLogPaginationModal({
+                      ...mobileLogPaginationModal,
+                      page: mobileLogPaginationModal.page + 1,
+                    });
+                }}
+              >
+                <Box border="1px solid black" borderRadius={1}>
+                  <ArrowForwardIcon fontSize="large" />
+                </Box>
+              </IconButton>
+            </Box>
+          </Box>
+        </>
+      )}
 
       <Modal
         open={transactionHistoryModal}
         onClose={toggleViewTransactionModal}
       >
         <Box sx={style}>
-          <DataGrid
-            sx={{
-              ".MuiDataGrid-columnHeaderCheckbox": {
-                display: "none",
-              },
-              "& .MuiDataGrid-cellCheckbox": {
-                display: "none",
-              },
-              border: 2,
-            }}
-            rows={fiatTraxnHistoryRows}
-            columns={transactionColumns}
-            initialState={{
-              pagination: {
-                paginationModel: {
-                  pageSize: 10,
+          {isMobile ? (
+            <DataGrid
+              sx={{
+                ".MuiDataGrid-columnHeaderCheckbox": {
+                  display: "none",
                 },
-              },
-            }}
-            pageSizeOptions={[10]}
-            checkboxSelection
-            disableRowSelectionOnClick
-            isRowSelectable={() => false}
-          />
+                "& .MuiDataGrid-cellCheckbox": {
+                  display: "none",
+                },
+                border: 2,
+              }}
+              rows={fiatTraxnHistoryRows}
+              columns={transactionColumns}
+              initialState={{
+                pagination: {
+                  paginationModel: {
+                    pageSize: 10,
+                  },
+                },
+              }}
+              pageSizeOptions={[10]}
+              checkboxSelection
+              disableRowSelectionOnClick
+              isRowSelectable={() => false}
+            />
+          ) : (
+            <>
+              <Box>
+                {traxnHistoryAccordionRows.map((traxn) => (
+                  <Accordion sx={{ border: "1px solid black" }} key={traxn.id}>
+                    <AccordionSummary>
+                      <Typography variant="h4">
+                        Date: {traxn.date} Time: {traxn.time}
+                      </Typography>
+                    </AccordionSummary>
+                    <AccordionDetails>
+                      <Typography variant="h4">
+                        UserName: {traxn.userName}
+                      </Typography>
+                      <Typography variant="h4">Email: {traxn.email}</Typography>
+                      <Typography variant="h4">Date: {traxn.date}</Typography>
+                      <Typography variant="h4">Time: {traxn.time}</Typography>
+                      <Typography variant="h4">
+                        Amount: {traxn.depositAmount}
+                      </Typography>
+                      <Typography variant="h4">
+                        Status: {traxn.depositStatus}
+                      </Typography>
+                      <Typography variant="h4">
+                        Reference No.: {traxn.RefID}
+                      </Typography>
+                    </AccordionDetails>
+                  </Accordion>
+                ))}
+              </Box>
+              <Box display="flex" justifyContent="center">
+                <Box display="flex">
+                  <IconButton
+                    onClick={() => {
+                      if (traxnHistoryPageID > 0)
+                        setMobileFiatTraxnByIdModal({
+                          ...mobileFiatTraxnByIdModal,
+                          page: mobileFiatTraxnByIdModal.page - 1,
+                        });
+                    }}
+                  >
+                    <Box border="1px solid black" borderRadius={1}>
+                      <ArrowBackIcon fontSize="large" />
+                    </Box>
+                  </IconButton>
+                  <IconButton
+                    onClick={() => {
+                      if (
+                        traxnHistoryPageID >= 0 &&
+                        traxnHistoryNextPageID < totalTraxnHistory
+                      )
+                        setMobileFiatTraxnByIdModal({
+                          ...mobileFiatTraxnByIdModal,
+                          page: mobileFiatTraxnByIdModal.page + 1,
+                        });
+                    }}
+                  >
+                    <Box border="1px solid black" borderRadius={1}>
+                      <ArrowForwardIcon fontSize="large" />
+                    </Box>
+                  </IconButton>
+                </Box>
+              </Box>
+            </>
+          )}
         </Box>
       </Modal>
 
-      <Modal open={messageModal} onClose={toggleMessageModal}>
-        <Box sx={messageModalStyles}>
+      <Modal
+        open={messageModal}
+        onClose={() => {
+          toggleMessageModal();
+          setEnteredRefId("");
+        }}
+      >
+        <Box sx={isMobile ? messageModalStyles : messageModalStylesMobile}>
           <Typography variant="h3" color="#ebff25">
             {message}
           </Typography>
@@ -632,6 +1078,7 @@ export default function DepositRecords() {
         open={remarkModal}
         onClose={() => {
           setRemark("");
+          setEnteredRefId("");
           toggleRemarkModal();
         }}
       >
@@ -643,7 +1090,15 @@ export default function DepositRecords() {
               value={remark}
               onChange={(e) => setRemark(e.target.value)}
             />
+            <TextField
+              sx={{ mt: 2 }}
+              required
+              label="Enter Reference number"
+              value={enteredRefId}
+              onChange={(e) => setEnteredRefId(e.target.value)}
+            />
             <Button
+              disabled={selectedRefNo !== enteredRefId}
               variant="contained"
               sx={{ mt: 2 }}
               onClick={async () => {
@@ -656,8 +1111,8 @@ export default function DepositRecords() {
                   [remark],
                   deposit.ActionType
                 );
-
                 await fetchAllLogs();
+                await fetchAllLogsMobile();
               }}
             >
               {actionType}

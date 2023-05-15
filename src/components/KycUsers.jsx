@@ -20,6 +20,7 @@ import {
   TextField,
   Card,
   CardContent,
+  useMediaQuery,
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { resetFilter } from "../redux/allUsers/allUsers.slice";
@@ -140,6 +141,7 @@ const accordionItems = [
 
 export default function KycUsers() {
   const [showLogs, setShowLogs] = useState(false);
+  const isMobile = useMediaQuery("(min-width:768px)");
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [filterByKycStatus, setFilterByKycStatus] = useState("");
@@ -151,9 +153,18 @@ export default function KycUsers() {
     pageSize: 5,
   });
   const [totalRows, setTotalRows] = useState(0);
-  const toggleBankModal = () => setBankModal(!bankModal);
 
-  
+  //Accordion states for kyc details
+  const [mobilePaginationModal, setMobilePaginationModal] = useState({
+    page: 0,
+    pageSize: 10,
+  });
+  const [kycUsersMobile, setKycUsersMobile] = useState([]);
+  const [totalKycMobile, setTotalKycMobile] = useState(null);
+  const [pageID, setPageID] = useState(null);
+  const [nextPageID, setNextPageID] = useState(null);
+
+  const toggleBankModal = () => setBankModal(!bankModal);
 
   const usersColumns = [
     {
@@ -237,9 +248,16 @@ export default function KycUsers() {
       headerName: "Bank Details",
       width: 150,
       renderCell: (params) => {
+        // console.log(params.row.id);
         return (
           <>
-            <ShowButton onClick={toggleBankModal}>Bank Details</ShowButton>
+            <ShowButton
+              onClick={async () => {
+                await fetchBankDetailsByID(params.row.id);
+              }}
+            >
+              Bank Details
+            </ShowButton>
           </>
         );
       },
@@ -282,7 +300,7 @@ export default function KycUsers() {
   const fetchAllUsers = useCallback(async () => {
     // const data = await makeGetReq("/v1/kyc/query-kyc?status=FAILED");
     const { data, total } = await makeGetReq(
-      `/v1/kyc/query-kyc?status=${filterByKycStatus}&pageSize=${
+      `/v1/kyc/query-kyc?status=IN_REVIEW&pageSize=${
         paginationModal.pageSize
       }&pageNo=${paginationModal.page + 1}`
     );
@@ -296,18 +314,48 @@ export default function KycUsers() {
       phone: user.mobileNumber || "---",
       bankVerifyStatus: user.pennyDropStatus,
     }));
-    setUserRows([ ...rows]);
-    setTotalRows(total)
-  }, [paginationModal.page, paginationModal.pageSize, filterByKycStatus])
+    setUserRows([...rows]);
+    setTotalRows(total);
+  }, [paginationModal.page, paginationModal.pageSize, filterByKycStatus]);
+
+  const fetchAllUsersMobile = useCallback(async () => {
+    const { data, total, pageID, nextPageID } = await makeGetReq(
+      `v1/kyc/query-kyc?status=IN_REVIEW&pageSize=${
+        mobilePaginationModal.pageSize
+      }&pageNo=${mobilePaginationModal.page + 1}`
+    );
+    const rows = data.map((user) => ({
+      id: user.id,
+      createdOn: new Date(user.createdAt).toLocaleDateString(),
+      email: user.email,
+      firstName: user.firstName || "---",
+      lastName: user.lastName || "---",
+      kycStatus: user.kycStatus,
+      phone: user.mobileNumber || "---",
+      bankVerifyStatus: user.pennyDropStatus,
+    }));
+    setKycUsersMobile(rows);
+    setTotalKycMobile(total);
+    setPageID(pageID);
+    setNextPageID(nextPageID);
+  }, [mobilePaginationModal.page, mobilePaginationModal.pageSize]);
+
+  const fetchBankDetailsByID = async (userID) => {
+    const { data } = await makeGetReq(`v1/bank/accounts?userID=${userID}`);
+    console.log(data);
+  };
 
   useEffect(() => {
     fetchAllUsers();
   }, [fetchAllUsers]);
 
+  useEffect(() => {
+    fetchAllUsersMobile();
+  }, [fetchAllUsersMobile]);
+
   return (
     <>
-      <BrowserView>
-        <Box m={2} display="flex" justifyContent="center" marginBottom={1}>
+      {/* <Box m={2} display="flex" justifyContent="center" marginBottom={1}>
           <Box display="flex" gap={"1rem"}>
             <Paper
               elevation={0}
@@ -350,40 +398,87 @@ export default function KycUsers() {
               Reset filter
             </Button>
           </Box>
+        </Box> */}
+      {isMobile ? (
+        <>
+          <Box sx={{ p: 2, height: 500, width: "100%" }}>
+            <DataGrid
+              sx={{
+                ".MuiDataGrid-columnHeaderCheckbox": {
+                  display: "none",
+                },
+                "& .MuiDataGrid-cellCheckbox": {
+                  display: "none",
+                },
+                "&.MuiDataGrid-root .MuiDataGrid-cell:focus-within": {
+                  outline: "none !important",
+                },
+                border: 2,
+              }}
+              rows={[...userRows]}
+              columns={usersColumns}
+              paginationModel={paginationModal}
+              rowCount={totalRows}
+              pageSizeOptions={[5, 10]}
+              paginationMode="server"
+              onPaginationModelChange={changePagination}
+              checkboxSelection
+              disableRowSelectionOnClick
+            />
+          </Box>
+        </>
+      ) : (
+        <Box sx={{ m: 1 }}>
+          {kycUsersMobile.map((kyc) => (
+            <Accordion sx={{ border: "1px solid black" }} key={kyc.id}>
+              <AccordionSummary>
+                <Typography variant="h4">{kyc.email}</Typography>
+              </AccordionSummary>
+              <AccordionDetails>
+                <Typography variant="h4">
+                  Created On: {kyc.createdOn}
+                </Typography>
+                <Typography variant="h4">Email: {kyc.email}</Typography>
+                <Typography variant="h4">
+                  First Name: {kyc.firstName}
+                </Typography>
+                <Typography variant="h4">Last Name: {kyc.lastName}</Typography>
+                <Typography variant="h4">
+                  Kyc Status: {kyc.kycStatus}
+                </Typography>
+                <Typography variant="h4">Phone: {kyc.phone}</Typography>
+                <Typography variant="h4">
+                  Bank Verification Status: {kyc.bankVerifyStatus}
+                </Typography>
+                <Box mt={1}>
+                  <Button
+                    variant="contained"
+                    fullWidth
+                    onClick={() => {
+                      // console.log(params);
+                      navigate(`/kycData/${kyc.id}`, {
+                        state: {
+                          email: kyc?.row?.email,
+                          phone: kyc?.row?.phone,
+                        },
+                      });
+                    }}
+                  >
+                    View KYC details
+                  </Button>
+                </Box>
+              </AccordionDetails>
+            </Accordion>
+          ))}
         </Box>
+      )}
 
-        <Box sx={{ p: 2, height: 500, width: "100%" }}>
-          <DataGrid
-            sx={{
-              ".MuiDataGrid-columnHeaderCheckbox": {
-                display: "none",
-              },
-              "& .MuiDataGrid-cellCheckbox": {
-                display: "none",
-              },
-              "&.MuiDataGrid-root .MuiDataGrid-cell:focus-within": {
-                outline: "none !important",
-              },
-              border: 2,
-            }}
-            rows={[...userRows]}
-            columns={usersColumns}
-            paginationModel={paginationModal}
-            rowCount={totalRows}
-            pageSizeOptions={[5, 10]}
-            paginationMode="server"
-            onPaginationModelChange={changePagination}
-            checkboxSelection
-            disableRowSelectionOnClick
-          />
-        </Box>
-
-        <Box display="flex" justifyContent="center">
-          <Typography variant="h2">KYC Logs</Typography>
-        </Box>
-        <Box sx={{ p: 2, height: 650, width: "100%" }}>
-           <KYClogs />
-          {/* <DataGrid
+      <Box display="flex" justifyContent="center">
+        <Typography variant="h2">KYC Logs</Typography>
+      </Box>
+      <Box sx={{ p: 2, height: 650, width: "100%" }}>
+        <KYClogs />
+        {/* <DataGrid
             columns={kycLogsColumns}
             rows={[...logs]}
             sx={{
@@ -399,144 +494,36 @@ export default function KycUsers() {
               border: 2,
             }}
           /> */}
-        </Box>
+      </Box>
 
-        <Modal open={bankModal} onClose={toggleBankModal}>
-          <Box sx={style}>
-            <IconButton
-              onClick={toggleBankModal}
-              sx={{ position: "absolute", top: 0, right: 0 }}
-            >
-              <CloseIcon />
-            </IconButton>
+      <Modal open={bankModal} onClose={toggleBankModal}>
+        <Box sx={style}>
+          <IconButton
+            onClick={toggleBankModal}
+            sx={{ position: "absolute", top: 0, right: 0 }}
+          >
+            <CloseIcon />
+          </IconButton>
 
-            <Box display="flex" justifyContent="center" marginBottom={2}>
-              <Typography variant="h3">Bank Details</Typography>
+          <Box display="flex" justifyContent="center" marginBottom={2}>
+            <Typography variant="h3">Bank Details</Typography>
+          </Box>
+          <Box>
+            <Box display="flex" gap={1}>
+              <Typography color="grey" variant="h4">
+                Account No.:
+              </Typography>
+              <Typography variant="h4">XXXX XXXX XXXX X983</Typography>
             </Box>
-            <Box>
-              <Box display="flex" gap={1}>
-                <Typography color="grey" variant="h4">
-                  Account No.:
-                </Typography>
-                <Typography variant="h4">XXXX XXXX XXXX X983</Typography>
-              </Box>
-              <Box display="flex" gap={1}>
-                <Typography color="grey" variant="h4">
-                  IFSC No.:
-                </Typography>
-                <Typography variant="h4">SBIN934343434343</Typography>
-              </Box>
+            <Box display="flex" gap={1}>
+              <Typography color="grey" variant="h4">
+                IFSC No.:
+              </Typography>
+              <Typography variant="h4">SBIN934343434343</Typography>
             </Box>
           </Box>
-        </Modal>
-      </BrowserView>
-
-      <MobileView>
-        <Box mt={2} mx={1}>
-          <Box mb={1}>
-            <TextField
-              label="Enter email"
-              value={filterByEmail}
-              onChange={(e) => setFilterByEmail(e.target.value)}
-              fullWidth
-            />
-          </Box>
-          {/* {accordionItems
-            .filter((accItem) => accItem.email.includes(filterByEmail))
-            .map((accItem) => (
-              <Accordion key={accItem.id}>
-                <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                  <Typography variant="h3">{accItem.email}</Typography>
-                </AccordionSummary>
-                <AccordionDetails>
-                  <Card>
-                    <CardContent>
-                      <Box display="flex" flexDirection={"column"} gap={2}>
-                        <Box
-                          boxShadow="15px"
-                          border="2px solid grey"
-                          borderRadius="5px"
-                          padding={1}
-                        >
-                          <Typography>Name</Typography>
-                          <hr />
-                          <Typography variant="h4">Jon Snow</Typography>
-                        </Box>
-                        <Box
-                          border="2px solid grey"
-                          borderRadius="5px"
-                          padding={1}
-                        >
-                          <Typography>Email</Typography>
-                          <hr />
-                          <Typography variant="h4">
-                            jon.snow@gmail.com
-                          </Typography>
-                        </Box>
-                        <Box
-                          border="2px solid grey"
-                          borderRadius="5px"
-                          padding={1}
-                        >
-                          <Typography>DOB</Typography>
-                          <hr />
-                          <Typography variant="h4">14/10/1998</Typography>
-                        </Box>
-                        <Box
-                          border="2px solid grey"
-                          borderRadius="5px"
-                          padding={1}
-                        >
-                          <Typography>Gender</Typography>
-                          <hr />
-                          <Typography variant="h4">Male</Typography>
-                        </Box>
-                        <Box
-                          border="2px solid grey"
-                          borderRadius="5px"
-                          padding={1}
-                        >
-                          <Typography>Phone</Typography>
-                          <hr />
-                          <Typography variant="h4">8585858556</Typography>
-                        </Box>
-                        <Box
-                          border="2px solid grey"
-                          borderRadius="5px"
-                          padding={1}
-                        >
-                          <Typography>Name Match</Typography>
-                          <hr />
-                          <Typography variant="h4">65%</Typography>
-                        </Box>
-                        <Box
-                          border="2px solid grey"
-                          borderRadius="5px"
-                          padding={1}
-                        >
-                          <Typography>Selfie Match</Typography>
-                          <hr />
-                          <Typography variant="h4">75%</Typography>
-                        </Box>
-                        <Box
-                          border="2px solid grey"
-                          borderRadius="5px"
-                          padding={1}
-                        >
-                          <Typography>Method</Typography>
-                          <hr />
-                          <Typography variant="h4">
-                            DIGILOCKER/DOCUMENT UPLOAD
-                          </Typography>
-                        </Box>
-                      </Box>
-                    </CardContent>
-                  </Card>
-                </AccordionDetails>
-              </Accordion>
-            ))} */}
         </Box>
-      </MobileView>
+      </Modal>
     </>
   );
 }
