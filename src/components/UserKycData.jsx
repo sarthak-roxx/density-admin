@@ -1,42 +1,18 @@
-/* eslint-disable */
-import React, { useCallback, useEffect, useRef, useState } from "react";
+/* eslint-disable no-mixed-spaces-and-tabs */
+import React, { useCallback, useEffect, useState } from "react";
 import {
   Box,
-  Card,
   CardContent,
   Typography,
-  Table,
-  TableRow,
-  TableCell,
-  TableHead,
   Button,
-  Modal,
   useMediaQuery,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
-  TextField,
 } from "@mui/material";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { makeGetReq } from "../utils/axiosHelper";
-import { MobileView } from "react-device-detect";
 import { DataGrid } from "@mui/x-data-grid";
-import pp from "../utils/imgs/PP.jpg";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
-import RemarkModal from "./RemarkModal";
+import { useLocation, useParams } from "react-router-dom";
 import { updateKYVStatus } from "../utils/updateKYCStatus";
-
-const style = {
-  position: "absolute",
-  top: "50%",
-  left: "50%",
-  transform: "translate(-50%, -50%)",
-  width: 400,
-  bgcolor: "background.paper",
-  border: "2px solid #000",
-  boxShadow: 24,
-  p: 4,
-};
+import UserKYCTabs from "./UserKYCTabs";
+import ConfirmationRemarkModal from "./ConfirmationRemarkModal";
 
 const adminLogsColumns = [
   {
@@ -58,29 +34,18 @@ const adminLogsColumns = [
 
 export default function UserKycData() {
   const { state } = useLocation();
-  const navigate = useNavigate();
   const { userID } = useParams();
   const [userKycData, setUserKycData] = useState({});
-  const [confirmModalOpen, setConfirmModalOpen] = useState(false);
   const isNotMobile = useMediaQuery("(min-width:768px)");
-  const [enlarge, setEnlarge] = useState(false);
-  const toggleEnlarge = () => setEnlarge(!enlarge);
-  const [showRemarkError, setShowRemarksError] = useState(false);
   const [logs, setLogs] = useState([]);
-  const userRemark = useRef();
-  const [remarkModal, setRemarkModal] = useState(false);
   const [totalRows, setTotalRows] = useState(0);
-  const actionRef = useRef("");
 
-  const [isAadharSelfieOpen, setIsAadharSelfieOpen] = useState(false);
-  const handleAadharSelfieDialog = () =>
-    setIsAadharSelfieOpen(!isAadharSelfieOpen);
+  const [showRemarkModal, setShowRemarkModal] = useState(false);
+  const [remark, setRemark] = useState("");
+  const [errorMessage, setErrorMessage] = useState(false);
+  const [userId, setUserId] = useState(0);
+  const [action, setAction] = useState("");
 
-  const [isPanSelfieOpen, setIsPanSelfieOpen] = useState(false);
-  const handlePanSelfieDialog = () => setIsPanSelfieOpen(!isPanSelfieOpen);
-
-  const [isSelfieOpen, setIsSelfieOpen] = useState(false);
-  const handleSelfieDialog = () => setIsSelfieOpen(!isSelfieOpen);
   const [paginationModal, setPaginationModal] = useState({
     page: 0,
     pageSize: 5,
@@ -90,9 +55,7 @@ export default function UserKycData() {
 
   const fetchLogs = useCallback(async () => {
     const response = await makeGetReq(
-      `/v1/admin-logs?actionType=KYC&pageNo=${
-        page + 1
-      }&size=${pageSize}&userID=${userID}`
+      `/v1/admin-logs?actionType=KYC&pageNo=${page + 1}&size=${pageSize}&userID=${userID}`
     );
     // setLogs(response.data);
     const logsRows = response?.data?.map((log) => ({
@@ -105,23 +68,23 @@ export default function UserKycData() {
     setTotalRows(response?.total);
   }, [page, pageSize]);
 
-  const handleUpdateKYC = async () => {
-    console.log(userRemark.current.value, "value print kar");
-    if (!userRemark.current.value && actionRef.current === "FAILED") {
-      setShowRemarksError(true);
-      return;
-    }
-    const { message } = await updateKYVStatus({
-      action: actionRef.current,
-      userID,
-      remarks: userRemark.current.value,
-    });
-    if (message === "OK") {
-      navigate("/kycUsers");
+  const handleConfirmationModal = (option) => {
+    if(option === "no") {
+      setErrorMessage(false);
+      setRemark(""); 
+      setUserId(0);
+      setShowRemarkModal(false);
     } else {
-      alert("error");
+      if(remark === "") {
+        setErrorMessage(true);
+        setRemark("");
+      } else {
+        updateKYVStatus(action ,userId, remark);
+        setErrorMessage(false);
+        setRemark("");
+        setShowRemarkModal(false); 
+      }
     }
-    setShowRemarksError(false);
   };
 
   useEffect(() => {
@@ -141,372 +104,101 @@ export default function UserKycData() {
     fetchLogs();
   }, [fetchLogs]);
 
-  const getStepStatus = (item) => {
-    // // console.log(item)
-    let val = userKycData?.steps && userKycData?.steps[item]?.status;
-    console.log(val);
-    if (!val) return <></>;
-    switch (val) {
-      case "SUCCESS":
-        return (
-          <Typography
-            sx={{ color: "#2e7d32", fontWeight: "500", fontSize: "28px" }}
-          >
-            Approved
-          </Typography>
-        );
-      case "FAILED":
-        return (
-          <Typography
-            sx={{ color: "#d32f2f", fontWeight: "500", fontSize: "28px" }}
-          >
-            Failed
-          </Typography>
-        );
-      default:
-        return (
-          <Typography
-            sx={{ color: "#fff44f", fontWeight: "500", fontSize: "28px" }}
-          >
-            Pending
-          </Typography>
-        );
-    }
-  };
   return (
-    <>
-      <Box margin={1}>
-        <Card>
-          <CardContent>
-            <Box
-              display="flex"
-              flexDirection={isNotMobile ? "row" : "column"}
-              gap={2}
-            >
-              <Box boxShadow="15px" padding={1}>
-                <Typography>Name</Typography>
-                <hr />
-                <Typography variant="h4">
-                  {getFieldData(userKycData?.documentDetail?.POAData?.name)}
-                </Typography>
-              </Box>
-              <Box padding={1}>
-                <Typography>Email</Typography>
-                <hr />
-                <Typography variant="h4">
-                  {getFieldData(state?.email)}
-                </Typography>
-              </Box>
-              <Box padding={1}>
-                <Typography>DOB</Typography>
-                <hr />
-                <Typography variant="h4">
-                  {getFieldData(userKycData?.documentDetail?.POAData?.DOB)}
-                </Typography>
-              </Box>
-              <Box padding={1}>
-                <Typography>Gender</Typography>
-                <hr />
-                <Typography variant="h4">
-                  {userKycData?.documentDetail?.POAData?.gender
-                    ? userKycData?.documentDetail?.POAData?.gender === "M"
-                      ? "Male"
-                      : "Female"
-                    : "--"}
-                </Typography>
-              </Box>
-              <Box padding={1}>
-                <Typography>Phone</Typography>
-                <hr />
-                <Typography variant="h4">
-                  {getFieldData(state?.phone)}
-                </Typography>
-              </Box>
-              <Box padding={1}>
-                <Typography>Name Match</Typography>
-                <hr />
-                <Typography variant="h4">
-                  {userKycData?.documentDetail?.IdentityMatchData
-                    ? (userKycData?.documentDetail?.IdentityMatchData
-                        ?.nameMatchScore /
-                        5) *
-                      100
-                    : "--"}{" "}
-                  %
-                </Typography>
-              </Box>
-              <Box padding={1}>
-                <Typography>Selfie Match</Typography>
-                <hr />
-                <Typography variant="h4">
-                  {getFieldData(
-                    userKycData?.documentDetail?.FaceMatchData
-                      ?.matchPercentWithPOAImage
-                  )}
-                  %
-                </Typography>
-              </Box>
-              <Box padding={1}>
-                <Typography>Method</Typography>
-                <hr />
-                <Typography variant="h4">DIGILOCKER/DOCUMENT UPLOAD</Typography>
-              </Box>
+    <Box sx={{ backgroundColor: "#EFF6FF", padding: "20px" }}>
+      <Box flexDirection={isNotMobile ? "row" : "column"} sx={{ display: "flex", justifyContent: "space-around" }}>
+        <CardContent>
+          <Box sx={{ backgroundColor: "#fff", padding: "3vw" }}>
+            <Box padding={1}>
+              <Typography>Name</Typography>
+              <Typography variant="h4">{getFieldData(userKycData?.documentDetail?.POAData?.name)}</Typography>
             </Box>
-          </CardContent>
-        </Card>
+
+            <Box padding={1}>
+              <Typography>Email</Typography>
+              <Typography variant="h4">{isNotMobile ? getFieldData(state?.email) : getFieldData(state?.email).substring(0, 20) + "..."}</Typography>
+            </Box>
+
+            <Box padding={1}>
+              <Typography>DOB</Typography>
+              <Typography variant="h4">{getFieldData(userKycData?.documentDetail?.POAData?.DOB)}</Typography>
+            </Box>
+
+            <Box padding={1}>
+              <Typography>Gender</Typography>
+              <Typography variant="h4">
+                {userKycData?.documentDetail?.POAData?.gender
+                  ? userKycData?.documentDetail?.POAData?.gender === "M"
+                    ? "Male"
+                    : "Female"
+                  : "--"}
+              </Typography>
+            </Box>
+
+            <Box padding={1}>
+              <Typography>Phone</Typography>
+              <Typography variant="h4">{getFieldData(state?.phone)}</Typography>
+            </Box>
+
+            <Box padding={1}>
+              <Typography>Name Match</Typography>
+              <Typography variant="h4">
+                {userKycData?.documentDetail?.IdentityMatchData
+                  ? (userKycData?.documentDetail?.IdentityMatchData?.nameMatchScore / 5) * 100
+                  : "--"}{" "}
+								%
+              </Typography>
+            </Box>
+
+            <Box padding={1}>
+              <Typography>Selfie Match</Typography>
+              <Typography variant="h4">
+                {getFieldData(userKycData?.documentDetail?.FaceMatchData?.matchPercentWithPOAImage)}%
+              </Typography>
+            </Box>
+
+            <Box padding={1}>
+              <Typography>Method</Typography>
+              <Typography variant="h4">DIGILOCKER/DOCUMENT UPLOAD</Typography>
+            </Box>
+
+            {userKycData?.status === "IN_REVIEW" ? (
+              <Box display="flex" justifyContent="space-around" margin={"auto"} width={isNotMobile ? "18%" : "80%"}>
+                <Button
+                  sx={{padding: "10px 40px", margin: "10px"}}
+                  color="error"
+                  variant="contained"
+                  onClick={() => {setUserId(getFieldData(userKycData?.documentDetail?.POAData?.id)); setShowRemarkModal(true); setAction("FAILED");}}
+                >
+									Reject
+                </Button>
+                <Button
+                  sx={{padding: "10px 40px", margin: "10px"}}
+                  color="success"
+                  variant="contained"
+                  onClick={() => {setUserId(getFieldData(userKycData?.documentDetail?.POAData?.id)); setShowRemarkModal(true); setAction("VERIFIED");}}
+                >
+									Approve
+                </Button>
+              </Box>
+            ) : userKycData?.status === "VERIFIED" ? (
+              <Box display="flex" justifyContent="center" margin={"auto"} width={isNotMobile ? "18%" : "80%"}>
+                <Typography sx={{ color: "#2e7d32", fontWeight: "500", fontSize: "28px" }}>Approved</Typography>;
+              </Box>
+            ) : userKycData?.status === "FAILED" ? (
+              <Box display="flex" justifyContent="center" margin={"auto"} width={isNotMobile ? "18%" : "80%"}>
+                <Typography sx={{ color: "#d32f2f", fontWeight: "500", fontSize: "28px" }}>Failed</Typography>;
+              </Box>
+            ) : (
+              <></>
+            )}
+          </Box>
+        </CardContent>
+        <UserKYCTabs />
       </Box>
 
-      <Box
-        display="flex"
-        flexDirection={isNotMobile ? "row" : "column"}
-        margin={1}
-        marginBottom={10}
-      >
-        <Box
-          width={isNotMobile ? "70%" : "100%"}
-          display="flex"
-          flexDirection={isNotMobile ? "row" : "column"}
-          justifyContent="space-around"
-          alignItems="center"
-        >
-          <Box width={isNotMobile ? "35%" : "100%"}>
-            <Card>
-              <CardContent>
-                <Box display="flex" justifyContent="center" mb={2}>
-                  <Typography variant="h3">Aadhar Details</Typography>
-                </Box>
-                <Box
-                  display="flex"
-                  justifyContent="space-between"
-                  alignItems="center"
-                >
-                  <Box>
-                    <Box display="flex" gap={1}>
-                      <Typography color="grey" variant="h5">
-                        Name:
-                      </Typography>
-                      <Typography variant="h5">
-                        {getFieldData(
-                          userKycData?.documentDetail?.POAData?.name
-                        )}
-                      </Typography>
-                    </Box>
-                    <Box display="flex" gap={1}>
-                      <Typography color="grey" variant="h5">
-                        Gender:
-                      </Typography>
-                      <Typography variant="h5">
-                        {userKycData?.documentDetail?.POAData?.gender
-                          ? userKycData?.documentDetail?.POAData?.gender === "M"
-                            ? "Male"
-                            : "Female"
-                          : "--"}
-                      </Typography>
-                    </Box>
-                    <Box display="flex" gap={1}>
-                      <Typography color="grey" variant="h5">
-                        DOB:
-                      </Typography>
-                      <Typography variant="h5">
-                        {getFieldData(
-                          userKycData?.documentDetail?.POAData?.DOB
-                        )}
-                      </Typography>
-                    </Box>
-                    <Box display="flex" gap={1} width={10}>
-                      <Typography color="grey" variant="h5">
-                        Aadhar No.:
-                      </Typography>
-                      <Typography variant="h5">
-                        {getFieldData(
-                          userKycData?.documentDetail?.POAData?.IDNumber
-                        )}
-                      </Typography>
-                    </Box>
-                    <Box display="flex" gap={1}>
-                      <Typography color="grey" variant="h5">
-                        Address:
-                      </Typography>
-                      <Typography variant="h5" sx={{ maxWidth: "120px" }}>
-                        {userKycData?.documentDetail?.POAData?.address
-                          ? userKycData?.documentDetail?.POAData?.address
-                              ?.house +
-                            ", " +
-                            userKycData?.documentDetail?.POAData?.address
-                              ?.landmark +
-                            ", " +
-                            userKycData?.documentDetail?.POAData?.address
-                              ?.landmark
-                          : "--"}
-                      </Typography>
-                    </Box>
-                  </Box>
-
-                  {userKycData?.documentDetail?.POAData?.documentImageURL && (
-                    <img
-                      width="40%"
-                      className="small"
-                      src={
-                        userKycData?.documentDetail?.POAData?.documentImageURL
-                      }
-                      alt="aadhar selfie"
-                    />
-                  )}
-                  {isAadharSelfieOpen &&
-                    userKycData?.documentDetail?.POAData?.documentImageURL && (
-                      <dialog
-                        className="dialog"
-                        style={{ position: "absolute", zIndex: 1000 }}
-                        open
-                        onClick={handleAadharSelfieDialog}
-                      >
-                        <img
-                          className="image"
-                          src={
-                            userKycData?.documentDetail?.POAData
-                              ?.documentImageURL
-                          }
-                          alt="aadhar dialog selfie"
-                          onClick={handleAadharSelfieDialog}
-                        />
-                      </dialog>
-                    )}
-                </Box>
-                <Box mt={1.5} display="flex" justifyContent="space-between">
-                  <Button variant="outlined" size="small">
-                    <Typography variant="h5">Download in XML format</Typography>
-                  </Button>
-                  <Button
-                    onClick={handleAadharSelfieDialog}
-                    variant="outlined"
-                    size="small"
-                  >
-                    <Typography variant="h5">Click here to enlarge</Typography>
-                  </Button>
-                </Box>
-                <Box marginTop={2} textAlign={"center"}>
-                  {userKycData && getStepStatus("PROOF_OF_ADDRESS")}
-                </Box>
-              </CardContent>
-            </Card>
-          </Box>
-
-          <Box width={isNotMobile ? "20%" : "100%"} minHeight={"250px"}>
-            <Card>
-              <CardContent>
-                <Box display="flex" justifyContent="center" marginBottom={2}>
-                  <Typography variant="h3">PAN Details</Typography>
-                </Box>
-                <Box display="flex" justifyContent="center" alignItems="center">
-                  <Box>
-                    <Box display="flex" gap={1}>
-                      <Typography color="grey" variant="h5">
-                        Name:
-                      </Typography>
-                      <Typography variant="h5">
-                        {getFieldData(
-                          userKycData?.documentDetail?.POIData?.nameOnCard
-                        )}
-                      </Typography>
-                    </Box>
-                    <Box display="flex" gap={1}>
-                      <Typography color="grey" variant="h5">
-                        Pan No.:
-                      </Typography>
-                      <Typography variant="h5">
-                        {getFieldData(
-                          userKycData?.documentDetail?.POIData?.IDNumber
-                        )}
-                      </Typography>
-                    </Box>
-                  </Box>
-                </Box>
-                {/* <Box mt={1} display="flex" justifyContent="flex-end">
-                  <Button onClick={handlePanSelfieDialog} variant="outlined">
-                    <Typography variant="h5">Click here to enlarge</Typography>
-                  </Button>
-                </Box> */}
-                <Box marginTop={2} textAlign={"center"}>
-                  {userKycData && getStepStatus("PROOF_OF_IDENTITY")}
-                </Box>
-              </CardContent>
-            </Card>
-          </Box>
-
-          <Box width={isNotMobile ? "35%" : "100%"}>
-            <Card>
-              <CardContent>
-                <Box display="flex" justifyContent="center" marginBottom={2}>
-                  <Typography variant="h3">Selfie details</Typography>
-                </Box>
-                <Box
-                  display="flex"
-                  justifyContent="space-between"
-                  alignItems="center"
-                >
-                  <Box display="flex" gap={1}>
-                    <Typography color="grey" variant="h5">
-                      Selfie Match:
-                    </Typography>
-                    <Typography variant="h5">
-                      {getFieldData(
-                        userKycData?.documentDetail?.FaceMatchData
-                          ?.matchPercentWithPOAImage
-                      )}
-                    </Typography>
-                  </Box>
-
-                  {userKycData?.documentDetail?.FaceCaptureData
-                    ?.documentImageURL && (
-                    <img
-                      width="40%"
-                      className="small"
-                      src={
-                        userKycData?.documentDetail?.FaceCaptureData
-                          ?.documentImageURL
-                      }
-                      alt="aadhar selfie"
-                    />
-                  )}
-                  {isSelfieOpen &&
-                    userKycData?.documentDetail?.FaceCaptureData
-                      ?.documentImageURL && (
-                      <dialog
-                        className="dialog"
-                        style={{ position: "absolute", zIndex: 1000 }}
-                        open
-                        onClick={handleSelfieDialog}
-                      >
-                        <img
-                          className="image"
-                          src={
-                            userKycData?.documentDetail?.FaceCaptureData
-                              ?.documentImageURL
-                          }
-                          alt="aadhar dialog selfie"
-                          onClick={handleSelfieDialog}
-                        />
-                      </dialog>
-                    )}
-                </Box>
-                <Box mt={1} display="flex" justifyContent="flex-end">
-                  <Button onClick={handleSelfieDialog} variant="outlined">
-                    <Typography variant="h5">Click here to enlarge</Typography>
-                  </Button>
-                </Box>
-                <Box marginTop={2} textAlign={"center"}>
-                  {userKycData && getStepStatus("FACE_MATCH")}
-                </Box>
-              </CardContent>
-            </Card>
-          </Box>
-        </Box>
-
-        <Box
-          width={isNotMobile ? "30%" : "100%"}
-          height={!isNotMobile ? "400px" : "300px"}
-          border="1px solid grey"
-        >
+      <Box sx={{display: "flex", justifyContent: "center", marginBottom: "10px"}}>
+        <Box sx={{width: "90%", border: "1px solid grey", height:"300px"}}>
           <DataGrid
             sx={{
               ".MuiDataGrid-columnHeaderCheckbox": {
@@ -535,118 +227,17 @@ export default function UserKycData() {
             disableRowSelectionOnClick
           />
         </Box>
+
+        <ConfirmationRemarkModal
+          isOpen={showRemarkModal}
+          close={() => {setShowRemarkModal(false); setRemark(""); setErrorMessage(false);}}
+          primaryAction={() => handleConfirmationModal("yes")}
+          secondaryAction={() => handleConfirmationModal("no")}
+          remark={remark}
+          setRemark={(e) => setRemark(e.target.value)}
+          error={errorMessage}
+        />
       </Box>
-
-      {userKycData?.status === "IN_REVIEW" ? (
-        <Box
-          display="flex"
-          justifyContent="space-between"
-          margin={"auto"}
-          width={isNotMobile ? "18%" : "80%"}
-        >
-          <Button
-            color="error"
-            variant="contained"
-            onClick={() => {
-              actionRef.current = "FAILED";
-              setRemarkModal(true);
-            }}
-          >
-            Reject
-          </Button>
-          <Button
-            color="success"
-            variant="contained"
-            onClick={() => {
-              actionRef.current = "VERIFIED";
-              setRemarkModal(true);
-            }}
-          >
-            Approve
-          </Button>
-        </Box>
-      ) : userKycData?.status === "VERIFIED" ? (
-        <Box
-          display="flex"
-          justifyContent="center"
-          margin={"auto"}
-          width={isNotMobile ? "18%" : "80%"}
-        >
-          <Typography
-            sx={{ color: "#2e7d32", fontWeight: "500", fontSize: "28px" }}
-          >
-            Approved
-          </Typography>
-          ;
-        </Box>
-      ) : userKycData?.status === "FAILED" ? (
-        <Box
-          display="flex"
-          justifyContent="center"
-          margin={"auto"}
-          width={isNotMobile ? "18%" : "80%"}
-        >
-          <Typography
-            sx={{ color: "#d32f2f", fontWeight: "500", fontSize: "28px" }}
-          >
-            Failed
-          </Typography>
-          ;
-        </Box>
-      ) : (
-        <></>
-      )}
-
-      <RemarkModal
-        open={remarkModal}
-        close={() => {
-          setShowRemarksError(false);
-          setRemarkModal(false);
-        }}
-      >
-        <Box sx={{ ...style, textAlign: "center" }}>
-          <Box display="flex" justifyContent="center" marginBottom={3}>
-            <Typography variant="h2">Are you sure ?</Typography>
-          </Box>
-          <TextField
-            label="Add a remark"
-            inputRef={userRemark}
-            // onChange={(e) => console.log(e.target.value)}
-          />
-          <Typography
-            component={"p"}
-            sx={{ display: showRemarkError ? "block" : "none" }}
-            color="error"
-          >
-            Remarks Can not be empty
-          </Typography>
-          <Box display="flex" justifyContent="space-between" mt={2}>
-            <Box width="40%">
-              <Button
-                fullWidth
-                variant="contained"
-                color="error"
-                onClick={() => {
-                  setShowRemarksError(false);
-                  setRemarkModal(false);
-                }}
-              >
-                No
-              </Button>
-            </Box>
-            <Box width="40%">
-              <Button
-                fullWidth
-                variant="contained"
-                color="success"
-                onClick={() => handleUpdateKYC()}
-              >
-                Yes
-              </Button>
-            </Box>
-          </Box>
-        </Box>
-      </RemarkModal>
-    </>
+    </Box>
   );
 }

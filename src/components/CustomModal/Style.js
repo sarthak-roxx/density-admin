@@ -23,10 +23,10 @@ export const BUTTONWRAPPER = {
 };
 
 export const PRIMARYBUTTON = {
-  color: "black",
-  backgroundColor: "#F46151",
+  color: "#fff",
+  backgroundColor: "#27BD67",
   ":hover": {
-    bgcolor: "#F46151"
+    bgcolor: "#27BD67"
   },
   borderRadius: "0 !important",
   maxWidth: "180px",
@@ -34,9 +34,9 @@ export const PRIMARYBUTTON = {
 };
 export const SECONDARYBUTTON = {
   color: "#fff",
-  backgroundColor: "#27BD67",
+  backgroundColor: "#F46151",
   ":hover": {
-    bgcolor: "#27BD67"
+    bgcolor: "#F46151"
   },
   width: "100%",
   maxWidth: "180px",
