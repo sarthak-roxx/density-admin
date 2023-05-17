@@ -53,26 +53,26 @@ export const theme = createTheme({
     divider: shades.neutral[900],
   },
   typography: {
-    fontFamily: ["Fauna One"].join(","),
+    fontFamily: ["Montserrat"].join(","),
     fontSize: 11,
     h1: {
-      fontFamily: ["Oswald"].join(","),
+      fontFamily: ["Montserrat"].join(","),
       fontSize: 48,
     },
     h2: {
-      fontFamily: ["Oswald"].join(","),
+      fontFamily: ["Montserrat"].join(","),
       fontSize: 36,
     },
     h3: {
-      fontFamily: ["Oswald"].join(","),
+      fontFamily: ["Montserrat"].join(","),
       fontSize: 24,
     },
     h4: {
-      fontFamily: ["Oswald"].join(","),
+      fontFamily: ["Montserrat"].join(","),
       fontSize: 18,
     },
     h5: {
-      fontFamily: ["Oswald"].join(","),
+      fontFamily: ["Montserrat"].join(","),
       fontSize: 12,
     },
   },
