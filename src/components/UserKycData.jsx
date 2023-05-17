@@ -6,7 +6,7 @@ import { DataGrid } from '@mui/x-data-grid';
 import { useLocation, useParams } from 'react-router-dom';
 import { updateKYVStatus } from '../utils/updateKYCStatus';
 import UserKYCTabs from './UserKYCTabs';
-import ConfirmationRemarkModal from './ConfirmationRemarkModal';
+import ConfirmationRemarkModal from './Modals/ConfirmationRemarkModal';
 
 const adminLogsColumns = [
 	{

@@ -251,18 +251,21 @@ export default function DepositRecords() {
 		{
 			field: 'date',
 			headerName: 'Date',
+			cellClassName: 'kyc-row-style',
 			headerClassName: 'kyc-column-header',
 			width: 100,
 		},
 		{
 			field: 'time',
 			headerName: 'Time',
+			cellClassName: 'kyc-row-style',
 			headerClassName: 'kyc-column-header',
 			width: 200,
 		},
 		{
 			field: 'userName',
 			headerName: 'Username',
+			cellClassName: 'kyc-row-style',
 			headerClassName: 'kyc-column-header',
 			width: 200,
 		},
@@ -272,6 +275,13 @@ export default function DepositRecords() {
 			cellClassName: 'kyc-row-style',
 			headerClassName: 'kyc-column-header',
 			width: 200,
+		},
+		{
+			field: 'phone',
+			headerName: 'Phone',
+			cellClassName: 'kyc-row-style',
+			headerClassName: 'kyc-column-header',
+			width: 150,
 		},
 		{
 			field: 'bankAccNo',
@@ -393,12 +403,12 @@ export default function DepositRecords() {
 			headerName: 'Time',
 			width: 100,
 		},
-		{
-			field: 'RefID',
-			headerClassName: 'kyc-column-header',
-			headerName: 'Reference Number',
-			width: 300,
-		},
+		// {
+		// 	field: 'RefID',
+		// 	headerClassName: 'kyc-column-header',
+		// 	headerName: 'Reference Number',
+		// 	width: 300,
+		// },
 		{
 			field: 'depositAmount',
 			headerClassName: 'kyc-column-header',
@@ -444,6 +454,7 @@ export default function DepositRecords() {
 			depositAmount: traxn.amount,
 			depositStatus: traxn.fiatTransactionStatus,
 			bankAccNo: traxn.userBankAccount,
+			phone: traxn.userPhone,
 			email: traxn.userEmail,
 			date: new Date(traxn.createdAt).toLocaleDateString(),
 			time: new Date(traxn.createdAt).toLocaleTimeString(),
@@ -473,6 +484,7 @@ export default function DepositRecords() {
 			depositAmount: traxn.amount,
 			depositStatus: traxn.fiatTransactionStatus,
 			bankAccNo: traxn.userBankAccount,
+			phone: traxn.userPhone,
 			email: traxn.userEmail,
 			date: new Date(traxn.createdAt).toLocaleDateString(),
 			time: new Date(traxn.createdAt).toLocaleTimeString(),
@@ -722,6 +734,7 @@ export default function DepositRecords() {
 									<Typography variant="h4">Username: {traxn.userName}</Typography>
 									<Typography variant="h4">Deposit Amount: {traxn.depositAmount}</Typography>
 									<Typography variant="h4">Deposit Status: {traxn.depositStatus}</Typography>
+									<Typography variant="h4">Bank Account No: {traxn.phone}</Typography>
 									<Typography variant="h4">Bank Account No: {traxn.bankAccNo}</Typography>
 									<Typography variant="h4">Reference Number: {traxn.redactedRefID}</Typography>
 									<Box mt={1}>

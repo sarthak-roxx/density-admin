@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { DataGrid } from '@mui/x-data-grid';
 import { styled } from '@mui/material/styles';
 import CloseIcon from '@mui/icons-material/Close';
-import ConfirmationRemarkModal from './ConfirmationRemarkModal';
+import ConfirmationRemarkModal from './Modals/ConfirmationRemarkModal';
 // import useSWR from "swr";
 import {
 	Box,
@@ -254,6 +254,13 @@ export default function KycUsers() {
 			headerClassName: 'kyc-column-header',
 			headerName: 'Bank Verification Status',
 			width: 200,
+			renderCell: (params) => {
+				return (
+					<Typography color={params.row.bankVerifyStatus === 'VERIFIED' ? 'green' : 'red'}>
+						{params.row.bankVerifyStatus}
+					</Typography>
+				);
+			},
 		},
 		{
 			field: 'bankDetails',

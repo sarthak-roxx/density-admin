@@ -242,42 +242,49 @@ export default function WithDraw() {
 	const depositLogs = [
 		{
 			field: 'timestamp',
+			cellClassName: 'kyc-row-style',
 			headerClassName: 'kyc-column-header',
 			headerName: 'Timestamp',
 			width: 150,
 		},
 		{
 			field: 'action',
+			cellClassName: 'kyc-row-style',
 			headerClassName: 'kyc-column-header',
 			headerName: 'Action',
 			width: 150,
 		},
 		{
 			field: 'admin',
+			cellClassName: 'kyc-row-style',
 			headerClassName: 'kyc-column-header',
 			headerName: 'Admin',
 			width: 200,
 		},
 		{
 			field: 'remarks',
+			cellClassName: 'kyc-row-style',
 			headerClassName: 'kyc-column-header',
 			headerName: 'Remark',
 			width: 500,
 		},
 		{
 			field: 'amount',
+			cellClassName: 'kyc-row-style',
 			headerClassName: 'kyc-column-header',
 			headerName: 'Amount',
 			width: 180,
 		},
 		{
 			field: 'user',
+			cellClassName: 'kyc-row-style',
 			headerClassName: 'kyc-column-header',
 			headerName: 'User',
 			width: 200,
 		},
 		{
 			field: 'phone',
+			cellClassName: 'kyc-row-style',
 			headerClassName: 'kyc-column-header',
 			headerName: 'Phone',
 			width: 200,
@@ -288,18 +295,21 @@ export default function WithDraw() {
 		{
 			field: 'date',
 			headerName: 'Date',
+			cellClassName: 'kyc-row-style',
 			headerClassName: 'kyc-column-header',
 			width: 100,
 		},
 		{
 			field: 'time',
 			headerName: 'Time',
+			cellClassName: 'kyc-row-style',
 			headerClassName: 'kyc-column-header',
 			width: 150,
 		},
 		{
 			field: 'userName',
 			headerName: 'Username',
+			cellClassName: 'kyc-row-style',
 			headerClassName: 'kyc-column-header',
 			width: 200,
 		},
@@ -644,12 +654,14 @@ export default function WithDraw() {
 	}, [getFiatTraxnByIdMobile]);
 
 	return (
-		<Box sx={{ backgroundColor: '#EFF6FF' }}>
-			<Box mt={1} display="flex">
-				<Box width="100vw" display="flex" justifyContent="center">
-					<Typography variant={isMobile ? 'h2' : 'h2'}>Withdraw Records</Typography>
+		<Box sx={{ backgroundColor: '#EFF6FF', padding: '10px' }}>
+			<Box display="flex">
+				<Box width="100%" display="flex" justifyContent="center">
+					<Typography textAlign="center" variant="h2">
+						Withdraw Records
+					</Typography>
 				</Box>
-				<Box sx={{ width: '45%', display: 'flex', justifyContent: 'flex-end', marginRight: '10px' }}>
+				<Box sx={{ position: 'absolute', right: '10px', marginTop: '10px' }}>
 					<Button onClick={toggleQueryCsvModal} variant="contained">
 						Download withdraw records
 					</Button>
@@ -684,7 +696,7 @@ export default function WithDraw() {
 
 			{isMobile ? (
 				<>
-					<Box sx={{ p: 2, height: 650, width: '100%' }}>
+					<Box sx={{ height: 650, width: '100%' }}>
 						<DataGrid
 							sx={{
 								'.MuiDataGrid-columnHeaderCheckbox': {
@@ -711,10 +723,10 @@ export default function WithDraw() {
 						/>
 					</Box>
 					<Box display="flex" justifyContent="center">
-						<Typography variant="h1">Withdraw Logs</Typography>
+						<Typography variant="h2">Withdraw Logs</Typography>
 					</Box>
 					<Box display="flex" justifyContent="center">
-						<Box sx={{ height: 650, width: '100%', p: 1 }}>
+						<Box sx={{ height: 650, width: '100%' }}>
 							<DataGrid
 								sx={{
 									'.MuiDataGrid-columnHeaderCheckbox': {
