@@ -312,7 +312,7 @@ export default function AdminUsersTable() {
 
 	return (
 		<Box sx={{ backgroundColor: '#EFF6FF' }}>
-			<Box m={1}>
+			<Box sx={{ padding: '10px' }}>
 				<Box display="flex" justifyContent="space-between" mb={1}>
 					<Button onClick={toggleAddAdminModal} variant="contained">
 						Create an admin

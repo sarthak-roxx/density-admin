@@ -646,8 +646,8 @@ export default function WithDraw() {
 	return (
 		<Box sx={{ backgroundColor: '#EFF6FF' }}>
 			<Box mt={1} display="flex">
-				<Box width="100%" display="flex" justifyContent="flex-end" marginRight="-20px">
-					<Typography variant={isMobile ? 'h1' : 'h2'}>Withdraw Records</Typography>
+				<Box width="100vw" display="flex" justifyContent="center">
+					<Typography variant={isMobile ? 'h2' : 'h2'}>Withdraw Records</Typography>
 				</Box>
 				<Box sx={{ width: '45%', display: 'flex', justifyContent: 'flex-end', marginRight: '10px' }}>
 					<Button onClick={toggleQueryCsvModal} variant="contained">

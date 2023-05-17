@@ -634,11 +634,13 @@ export default function DepositRecords() {
 
 	return (
 		<Box sx={{ backgroundColor: '#EFF6FF' }}>
-			<Box mt={1} display="flex">
-				<Box width="100%" display="flex" justifyContent="flex-end">
-					<Typography variant={isMobile ? 'h1' : 'h2'}>Deposit Records</Typography>
+			<Box padding="10px" display="flex">
+				<Box width="100%" display="flex" justifyContent="center">
+					<Typography textAlign="center" variant={isMobile ? 'h2' : 'h2'}>
+						Deposit Records
+					</Typography>
 				</Box>
-				<Box sx={{ width: '45%', display: 'flex', justifyContent: 'flex-end', marginRight: '10px' }}>
+				<Box sx={{ position: 'absolute', right: '10px', marginTop: '10px' }}>
 					<Button onClick={toggleQueryCsvModal} variant="contained">
 						Download deposit records
 					</Button>
@@ -675,7 +677,7 @@ export default function DepositRecords() {
 						/>
 					</Box>
 					<Box display="flex" justifyContent="center">
-						<Typography variant="h1">Deposit Logs</Typography>
+						<Typography variant="h2">Deposit Logs</Typography>
 					</Box>
 					<Box display="flex" justifyContent="center">
 						<Box sx={{ height: 650, width: '100%', p: 1 }}>
