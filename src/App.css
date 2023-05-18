@@ -1,59 +1,58 @@
 .kyc-column-header {
-  font-size: 15px;
-  font-weight: bold;
-  color: #000000;
+	font-size: 15px;
+	color: grey;
 }
 
 .kyc-row-style {
-  font-size: 12px;
-  font-weight: bold;
+	font-size: 12px;
+	font-weight: bold;
 }
 
 /* reward screen styles */
 
 @media only screen and (max-width: 400px) {
-  .reward_user_card {
-    flex-direction: column;
-  }
+	.reward_user_card {
+		flex-direction: column;
+	}
 
-  .userInfoCard {
-    width: 100%;
-  }
+	.userInfoCard {
+		width: 100%;
+	}
 
-  .enterEmailSection {
-    width: 100%;
-  }
+	.enterEmailSection {
+		width: 100%;
+	}
 
-  .rewardButton {
-    width: 100%;
-  }
+	.rewardButton {
+		width: 100%;
+	}
 }
 
 @media only screen and (min-width: 600px) {
-  .reward_user_card {
-    flex-direction: row;
-  }
+	.reward_user_card {
+		flex-direction: row;
+	}
 
-  .userInfoCard {
-    width: 50%;
-  }
+	.userInfoCard {
+		width: 50%;
+	}
 
-  .enterEmailSection {
-    width: 50%;
-  }
+	.enterEmailSection {
+		width: 50%;
+	}
 
-  .rewardButton {
-    width: 56%;
-  }
+	.rewardButton {
+		width: 56%;
+	}
 }
 .dialog {
-  box-shadow: 0 8px 6px -6px black;
-  position: static;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
+	box-shadow: 0 8px 6px -6px black;
+	position: static;
+	left: 50%;
+	top: 50%;
+	transform: translate(-50%, -50%);
 }
 
 .image {
-  width: 300px;
+	width: 300px;
 }

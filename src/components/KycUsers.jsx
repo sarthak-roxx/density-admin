@@ -9,8 +9,6 @@ import ConfirmationRemarkModal from './Modals/ConfirmationRemarkModal';
 import {
 	Box,
 	Button,
-	Paper,
-	ToggleButton,
 	ToggleButtonGroup,
 	Typography,
 	Modal,
@@ -18,10 +16,8 @@ import {
 	Accordion,
 	AccordionSummary,
 	AccordionDetails,
-	TextField,
-	Card,
-	CardContent,
 	useMediaQuery,
+	InputLabel,
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { resetFilter } from '../redux/allUsers/allUsers.slice';
@@ -35,11 +31,13 @@ import KYClogs from './KYClogs';
 import { updateKYVStatus } from '../utils/updateKYCStatus';
 
 const ShowButton = styled(Button)(({ theme }) => ({
-	borderRadius: '4px',
-	color: '#fff',
-	backgroundColor: theme.palette.info.main,
+	borderRadius: '10px',
+	width: '110px',
+	color: theme.palette.info.main,
+	border: '2px solid',
+	borderColor: theme.palette.info.main,
 	'&:hover': {
-		backgroundColor: theme.palette.info.dark,
+		border: '2px solid theme.palette.info.dark',
 	},
 }));
 
@@ -71,7 +69,9 @@ const SuccessTile = styled(Box)(({ theme }) => ({
 }));
 
 const InProgressTile = styled(Typography)(({ theme }) => ({
-	color: '#FFB61E',
+	color: '#fcbe42',
+	fontSize: '15px',
+	fontWeight: 500,
 }));
 
 const StyledToggleButtonGroup = styled(ToggleButtonGroup)(({ theme }) => ({
@@ -90,6 +90,11 @@ const StyledToggleButtonGroup = styled(ToggleButtonGroup)(({ theme }) => ({
 	},
 }));
 
+const getDisplayString = (text) => {
+	if (text === 'IN_REVIEW') return 'In Review';
+	else if (text === 'NOT_VERIFIED') return 'Not Verified';
+};
+
 const style = {
 	position: 'absolute',
 	top: '50%',
@@ -102,49 +107,6 @@ const style = {
 	boxShadow: 24,
 	p: 4,
 };
-
-const accordionItems = [
-	{
-		id: 1,
-		createdOn: '24/1/2022',
-		firstName: 'Jon',
-		lastName: 'Snow',
-		email: 'jon.snow@gmail.com',
-		phone: 8585858585,
-		kycStatus: 'Pending',
-		bankVerifyStatus: 'Yes',
-	},
-	{
-		id: 2,
-		createdOn: '14/5/2022',
-		firstName: 'Jane',
-		lastName: 'Doe',
-		email: 'jane.doe@gmail.com',
-		phone: 9393939393,
-		kycStatus: 'Pending',
-		bankVerifyStatus: 'Yes',
-	},
-	{
-		id: 3,
-		createdOn: '24/1/2022',
-		firstName: 'Jon',
-		lastName: 'Snow',
-		email: 'mike.tyson@gmail.com',
-		phone: 8585858585,
-		kycStatus: 'awaiting',
-		bankVerifyStatus: 'Yes',
-	},
-	{
-		id: 4,
-		createdOn: '5/1/2022',
-		firstName: 'Sarthak',
-		lastName: 'Verma',
-		email: 'verma.sarthak@gmail.com',
-		phone: 8585858585,
-		kycStatus: 'done',
-		bankVerifyStatus: 'Yes',
-	},
-];
 
 export default function KycUsers() {
 	const [showLogs, setShowLogs] = useState(false);
@@ -186,9 +148,7 @@ export default function KycUsers() {
 			headerClassName: 'kyc-column-header',
 			headerName: 'Created On',
 			valueFormatter: (params) => dayjs(params.value).format('DD/MM/YYYY'),
-			width: 150,
-			left: 0,
-			position: 'sticky',
+			width: 100,
 		},
 		{
 			field: 'firstName',
@@ -206,7 +166,7 @@ export default function KycUsers() {
 			field: 'email',
 			headerClassName: 'kyc-column-header',
 			headerName: 'Email',
-			width: 200,
+			width: 150,
 		},
 		{
 			field: 'phone',
@@ -218,11 +178,11 @@ export default function KycUsers() {
 			field: 'kycStatus',
 			headerClassName: 'kyc-column-header',
 			headerName: 'KYC Status',
-			width: 150,
+			width: 100,
 			renderCell: (params) => {
 				if (params.row.kycStatus === 'FAILED') return <FailedTile>{params.row.kycStatus}</FailedTile>;
 				else if (params.row.kycStatus === 'VERIFIED') return <SuccessTile>{params.row.kycStatus}</SuccessTile>;
-				else return <InProgressTile>{params.row.kycStatus}</InProgressTile>;
+				else return <InProgressTile>{getDisplayString(params.row.kycStatus)}</InProgressTile>;
 			},
 		},
 		{
@@ -253,11 +213,14 @@ export default function KycUsers() {
 			field: 'bankVerifyStatus',
 			headerClassName: 'kyc-column-header',
 			headerName: 'Bank Verification Status',
-			width: 200,
+			width: 150,
 			renderCell: (params) => {
 				return (
-					<Typography color={params.row.bankVerifyStatus === 'VERIFIED' ? 'green' : 'red'}>
-						{params.row.bankVerifyStatus}
+					<Typography
+						color={params.row.bankVerifyStatus === 'VERIFIED' ? 'green' : 'red'}
+						sx={{ fontWeight: '500', fontSize: '15px' }}
+					>
+						{getDisplayString(params.row.bankVerifyStatus)}
 					</Typography>
 				);
 			},
@@ -287,7 +250,7 @@ export default function KycUsers() {
 			field: 'approve',
 			headerClassName: 'kyc-column-header',
 			headerName: 'Approve',
-			width: 150,
+			width: 100,
 			renderCell: (params) => {
 				return (
 					<>
@@ -308,7 +271,7 @@ export default function KycUsers() {
 			field: 'reject',
 			headerClassName: 'kyc-column-header',
 			headerName: 'Reject',
-			width: 150,
+			width: 100,
 			renderCell: (params) => {
 				return (
 					<>
@@ -410,50 +373,6 @@ export default function KycUsers() {
 
 	return (
 		<Box sx={{ backgroundColor: '#EFF6FF' }}>
-			{/* <Box m={2} display="flex" justifyContent="center" marginBottom={1}>
-          <Box display="flex" gap={"1rem"}>
-            <Paper
-              elevation={0}
-              sx={{
-                display: "flex",
-                border: (theme) => `1px solid ${theme.palette.divider}`,
-                flexWrap: "wrap",
-                width: "fit-content",
-              }}
-            >
-              <StyledToggleButtonGroup
-                size="small"
-                value={filterByKycStatus}
-                exclusive
-                onChange={handleAlignment}
-              >
-                <ToggleButton value="">
-                  <Typography variant="h4">All Users</Typography>
-                </ToggleButton>
-                <ToggleButton value="IN_PROGRESS">
-                  <Typography variant="h4">In_Progress KYC</Typography>
-                </ToggleButton>
-                <ToggleButton value="IN_REVIEW">
-                  <Typography variant="h4">IN_REVIEW</Typography>
-                </ToggleButton>
-              </StyledToggleButtonGroup>
-            </Paper>
-            <Box
-              sx={{
-                "& .MuiButtonBase-root": {
-                  height: "45.83px",
-                },
-              }}
-              display="flex"
-              justifyContent="flex-end"
-            >
-              <FilterComponent />
-            </Box>
-            <Button onClick={() => dispatch(resetFilter())} variant="contained">
-              Reset filter
-            </Button>
-          </Box>
-        </Box> */}
 			{isMobile ? (
 				<Box>
 					<Box sx={{ p: 2, height: 500, width: '100%' }}>
@@ -467,6 +386,7 @@ export default function KycUsers() {
 							onPaginationModelChange={changePagination}
 							checkboxSelection
 							disableRowSelectionOnClick
+							getRowClassName={(params) => (params.rowIndex % 2 === 0 ? 'even-row' : 'odd-row')}
 							sx={{
 								'.MuiDataGrid-columnHeaderCheckbox': {
 									display: 'none',
@@ -478,6 +398,10 @@ export default function KycUsers() {
 									outline: 'none !important',
 								},
 								backgroundColor: '#FFF',
+								fontSize: '15px',
+								borderRadius: '20px',
+								padding: '10px',
+								boxShadow: 5,
 							}}
 						/>
 					</Box>
