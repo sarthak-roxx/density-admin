@@ -346,7 +346,7 @@ export default function KycUsers() {
 		setBankDetail(data);
 	};
 
-	const handleConfirmationModal = (option) => {
+	const handleConfirmationModal = async (option) => {
 		if (option === 'no') {
 			setErrorMessage(false);
 			setRemark('');
@@ -357,6 +357,22 @@ export default function KycUsers() {
 				setErrorMessage(true);
 				setRemark('');
 			} else {
+				console.log(action, userId, remark);
+				const { message } = await updateKYVStatus({
+					action,
+					userId,
+					remarks: remark,
+				});
+				if (message === 'OK') {
+					navigate('/kycUsers');
+				} else {
+					alert('error');
+				}
+				// updateKYVStatus({
+				// 	action: action,
+				// 	userId,
+				// 	remarks: remark,
+				// });
 				updateKYVStatus(action, userId, remark);
 				setErrorMessage(false);
 				setRemark('');
