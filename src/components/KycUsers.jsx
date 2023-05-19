@@ -352,18 +352,19 @@ export default function KycUsers() {
 			setRemark('');
 			setUserId(0);
 			setShowRemarkModal(false);
-		} else {
+		} else if (option === 'yes') {
 			if (remark === '') {
 				setErrorMessage(true);
 				setRemark('');
 			} else {
-				console.log(action, userId, remark);
+				// console.log(action, userId, remark);
 				const { message } = await updateKYVStatus({
 					action,
-					userId,
+					userID: userId,
 					remarks: remark,
 				});
 				if (message === 'OK') {
+					setShowRemarkModal(false);
 					navigate('/kycUsers');
 				} else {
 					alert('error');
@@ -373,10 +374,7 @@ export default function KycUsers() {
 				// 	userId,
 				// 	remarks: remark,
 				// });
-				updateKYVStatus(action, userId, remark);
-				setErrorMessage(false);
-				setRemark('');
-				setShowRemarkModal(false);
+				// updateKYVStatus(action, userId, remark);
 			}
 		}
 	};

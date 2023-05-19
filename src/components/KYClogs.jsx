@@ -132,17 +132,18 @@ const KYClogs = () => {
 			`/v1/admin-logs?actionType=KYC&pageNo=${page + 1}&size=${pageSize}&adminID=${session.userId}`
 		);
 		// setLogs(response.data);
-		const logsRows = response?.data?.map((log) => ({
-			id: log?.logID,
-			createdOn: new Date(log.createdAt)?.toLocaleString(),
+		const logsRows = response?.data?.map((log) => {
+			console.log("date", log?.createdAt , new Date(log?.createdAt)?.toLocaleString());
+			return ({id: log?.logID,
+			createdOn: new Date(log?.createdAt),
 			kycStatus: log?.action?.log?.Status,
 			admin: log?.adminName,
 			email: log?.email,
 			phone: log?.phone,
 			firstName: log?.userFirstName ? logs?.userFirstName : '--',
 			lastName: log?.userLastName ? logs?.userLasttName : '--',
-			remarks: log?.action?.log?.Remark?.at(0).length > 0 ? log?.action?.log?.Remark?.at(0) : '--',
-		}));
+			remarks: log?.action?.log?.Remark?.at(0).length > 0 ? log?.action?.log?.Remark?.at(0) : '--',})
+		});
 		setLogs(logsRows);
 		setTotalRows(response?.total);
 	}, [page, pageSize, session.userId]);

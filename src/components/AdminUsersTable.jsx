@@ -490,6 +490,8 @@ export default function AdminUsersTable() {
 								<MenuItem value="AdminLogViewer">AdminLogViewer</MenuItem>
 								<MenuItem value="RewardUpdater">RewardUpdater</MenuItem>
 								<MenuItem value="AppVersionUpdater">AppVersionUpdater</MenuItem>
+								<MenuItem value="FiatViewer">FiatViewer</MenuItem>
+
 							</Select>
 						</FormControl>
 					</Box>
