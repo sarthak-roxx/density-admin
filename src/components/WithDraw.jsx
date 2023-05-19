@@ -154,7 +154,7 @@ const remarkModalStyles = {
 };
 
 export default function WithDraw() {
-	// const { userId: adminID } = useSessionContext();
+	const { userId: adminID } = useSessionContext();
 
 	const isMobile = useMediaQuery('(min-width:768px)');
 
@@ -478,6 +478,11 @@ export default function WithDraw() {
 		setDepositPaginationModal({ page: event.page, pageSize: event.pageSize });
 	};
 
+	const fetchUserRole = useCallback(async () => {
+		const role = await makeGetReq(`v1/admin/${adminID}`);
+		console.log('helllllasfd', role.IsSuperAdmin);
+	});
+
 	const fetchAllFiatTxn = useCallback(async () => {
 		const { data, total } = await makeGetReq(
 			`v1/fiat/query-fiat-transaction?type=INR_WITHDRAWAL&size=${paginationModal.pageSize}&start=${
@@ -644,6 +649,10 @@ export default function WithDraw() {
 		}
 		return str + refNo.slice(-3);
 	};
+
+	useEffect(() => {
+		fetchUserRole();
+	}, [fetchUserRole]);
 
 	useEffect(() => {
 		fetchAllFiatTxnMobile();

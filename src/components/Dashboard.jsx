@@ -9,6 +9,9 @@ import { BrowserView } from 'react-device-detect';
 import { makeGetReq, makePostReq } from '../utils/axiosHelper';
 import InfoModal from './InfoModal';
 import DashboardCards from './DashboardCards';
+import { getCurrentUserInfo } from '../redux/currentUser/currentUser.slice';
+import { useSessionContext } from 'supertokens-auth-react/recipe/session';
+import { useDispatch } from 'react-redux';
 
 const changeAppVerModalStyles = {
 	position: 'absolute',
@@ -35,6 +38,10 @@ export default function Dashboard() {
 	const [showInfoMessage, setShowInfoMessage] = useState('');
 	// const [appVer, setAppVer] = useState();
 
+	const dispatch = useDispatch();
+
+	const { userId: adminID } = useSessionContext();
+
 	const getAppVer = async () => {
 		const data = await makeGetReq('v1/mobile/version?osType=ANDROID');
 		setShowAppVersion(data?.version);
@@ -58,8 +65,15 @@ export default function Dashboard() {
 			});
 	};
 
+	const getCurrentUser = async () => {
+		const currentUser = await makeGetReq(`/v1/admin/${adminID}`);
+		console.log('ladsfjakl', currentUser);
+		dispatch(getCurrentUserInfo(currentUser));
+	};
+
 	useEffect(() => {
 		getAppVer();
+		getCurrentUser();
 	}, []);
 
 	return (

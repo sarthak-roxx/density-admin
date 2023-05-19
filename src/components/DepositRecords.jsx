@@ -1029,15 +1029,20 @@ export default function DepositRecords() {
 				<Box sx={remarkModalStyles}>
 					<Box display="flex" flexDirection="column">
 						<TextField required label="Enter Remark" value={remark} onChange={(e) => setRemark(e.target.value)} />
-						<TextField
-							sx={{ mt: 2 }}
-							required
-							label="Enter Reference number"
-							value={enteredRefId}
-							onChange={(e) => setEnteredRefId(e.target.value)}
-						/>
+						{actionType === 'Approve' ? (
+							<TextField
+								sx={{ mt: 2 }}
+								required
+								label="Enter Reference number"
+								value={enteredRefId}
+								onChange={(e) => setEnteredRefId(e.target.value)}
+							/>
+						) : (
+							''
+						)}
+
 						<Button
-							disabled={selectedRefNo !== enteredRefId}
+							disabled={selectedRefNo !== enteredRefId && actionType === 'Approve'}
 							variant="contained"
 							sx={{ mt: 2 }}
 							onClick={async () => {
