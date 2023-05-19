@@ -128,7 +128,10 @@ export default function AdminUsersTable() {
 	const toggleAssignRoleModal = () => setAssignRoleModal(!assignRoleModal);
 	const toggleEditRoleModal = () => setEditRoleModal(!editRoleModal);
 
-	const adminColumns = [
+	const currentUser = useSelector((state) => state.currentUser.currentUserInfo);
+	console.log('alsdfjl', currentUser.IsSuperAdmin);
+
+	const SuperAdminColumns = [
 		{
 			field: 'name',
 			headerName: 'Name',
@@ -211,6 +214,40 @@ export default function AdminUsersTable() {
 						>
 							delete
 						</DeleteButton>
+					</>
+				);
+			},
+		},
+	];
+
+	const adminColumns = [
+		{
+			field: 'name',
+			headerName: 'Name',
+			width: 150,
+		},
+		{
+			field: 'email',
+			headerName: 'Email',
+			width: 300,
+		},
+		{
+			field: 'superAdmin',
+			headerName: 'SuperAdmin',
+			width: 100,
+		},
+		{
+			field: 'role',
+			headerName: 'Roles',
+			width: 200,
+			renderCell: (params) => {
+				return (
+					<>
+						<Roles>
+							{params.value.map((role, idx) => (
+								<RoleTile key={idx}>{role.Role}</RoleTile>
+							))}
+						</Roles>
 					</>
 				);
 			},
@@ -337,10 +374,14 @@ export default function AdminUsersTable() {
 								'&.MuiDataGrid-root .MuiDataGrid-cell:focus-within': {
 									outline: 'none !important',
 								},
-								backgroundColor: '#fff',
+								backgroundColor: '#FFF',
+								fontSize: '15px',
+								borderRadius: '20px',
+								padding: '10px',
+								boxShadow: 5,
 							}}
 							rows={adminRows}
-							columns={adminColumns}
+							columns={currentUser.IsSuperAdmin ? SuperAdminColumns : adminColumns}
 							initialState={{
 								pagination: {
 									paginationModel: {
