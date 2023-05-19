@@ -21,11 +21,14 @@ import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
 const ViewButton = styled(Button)(({ theme }) => ({
-	borderRadius: '4px',
-	color: '#fff',
-	backgroundColor: theme.palette.info.main,
+	borderRadius: '10px',
+	color: theme.palette.info.main,
+	border: '2px solid',
+	borderColor: theme.palette.info.main,
 	'&:hover': {
-		backgroundColor: theme.palette.info.dark,
+		border: '2px solid',
+		borderColor: theme.palette.info.dark,
+		color: theme.palette.info.dark,
 	},
 }));
 
@@ -260,26 +263,23 @@ export default function DepositRecords() {
 			headerName: 'Time',
 			cellClassName: 'kyc-row-style',
 			headerClassName: 'kyc-column-header',
-			width: 200,
+			width: 100,
 		},
 		{
 			field: 'userName',
 			headerName: 'Username',
-			cellClassName: 'kyc-row-style',
 			headerClassName: 'kyc-column-header',
-			width: 200,
+			width: 100,
 		},
 		{
 			field: 'email',
 			headerName: 'Email',
-			cellClassName: 'kyc-row-style',
 			headerClassName: 'kyc-column-header',
-			width: 200,
+			width: 150,
 		},
 		{
 			field: 'phone',
 			headerName: 'Phone',
-			cellClassName: 'kyc-row-style',
 			headerClassName: 'kyc-column-header',
 			width: 150,
 		},
@@ -295,19 +295,18 @@ export default function DepositRecords() {
 			headerName: 'Deposit Amount',
 			cellClassName: 'kyc-row-style',
 			headerClassName: 'kyc-column-header',
-			width: 150,
+			width: 100,
 		},
 		{
 			field: 'redactedRefID',
 			headerName: 'Reference Number',
 			cellClassName: 'kyc-row-style',
 			headerClassName: 'kyc-column-header',
-			width: 200,
+			width: 100,
 		},
 		{
 			field: 'depositStatus',
 			headerName: 'Deposit Status',
-			cellClassName: 'kyc-row-style',
 			headerClassName: 'kyc-column-header',
 			widht: 200,
 		},
@@ -673,8 +672,11 @@ export default function DepositRecords() {
 								'&.MuiDataGrid-root .MuiDataGrid-cell:focus-within': {
 									outline: 'none !important',
 								},
-								backgroundColor: '#fff',
-								paddingBorrom: '0',
+								backgroundColor: '#FFF',
+								fontSize: '15px',
+								borderRadius: '20px',
+								padding: '10px',
+								boxShadow: 5,
 							}}
 							rows={isMobile ? fiatTraxns : AccordionRows}
 							columns={isMobile ? columns : mobileDepositColumns}

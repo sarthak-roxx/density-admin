@@ -55,11 +55,14 @@ const StyledToggleButtonGroup = styled(ToggleButtonGroup)(({ theme }) => ({
 }));
 
 const ViewButton = styled(Button)(({ theme }) => ({
-	borderRadius: '4px',
-	color: '#fff',
-	backgroundColor: theme.palette.info.main,
+	borderRadius: '10px',
+	color: theme.palette.info.main,
+	border: '2px solid',
+	borderColor: theme.palette.info.main,
 	'&:hover': {
-		backgroundColor: theme.palette.info.dark,
+		border: '2px solid',
+		borderColor: theme.palette.info.dark,
+		color: theme.palette.info.dark,
 	},
 }));
 
@@ -304,49 +307,55 @@ export default function WithDraw() {
 			headerName: 'Time',
 			cellClassName: 'kyc-row-style',
 			headerClassName: 'kyc-column-header',
-			width: 150,
+			width: 100,
 		},
 		{
 			field: 'userName',
 			headerName: 'Username',
-			cellClassName: 'kyc-row-style',
 			headerClassName: 'kyc-column-header',
-			width: 200,
+			width: 100,
 		},
 		{
 			field: 'email',
 			headerName: 'Email',
-			cellClassName: 'kyc-row-style',
 			headerClassName: 'kyc-column-header',
-			width: 200,
+			width: 150,
+		},
+		{
+			field: 'phone',
+			headerName: 'Phone',
+			headerClassName: 'kyc-column-header',
+			width: 150,
 		},
 		{
 			field: 'bankAccNo',
 			cellClassName: 'kyc-row-style',
 			headerName: 'Bank Account No',
 			headerClassName: 'kyc-column-header',
-			width: 250,
+			width: 150,
 		},
 		{
 			field: 'withdrawAmount',
 			headerName: 'Withdraw Amount',
 			cellClassName: 'kyc-row-style',
 			headerClassName: 'kyc-column-header',
-			width: 150,
+			width: 100,
 		},
 		{
 			field: 'redactedRefID',
 			headerName: 'Reference Number',
 			cellClassName: 'kyc-row-style',
 			headerClassName: 'kyc-column-header',
-			width: 200,
+			width: 100,
 		},
 		{
 			field: 'withdrawStatus',
 			headerName: 'Withdraw Status',
-			cellClassName: 'kyc-row-style',
 			headerClassName: 'kyc-column-header',
 			width: 150,
+			renderCell: (params) => {
+				return <Typography sx={{ fontSize: '15px', color: '#fcbe42', fontWeight: '500' }}>Processing</Typography>;
+			},
 		},
 		{
 			field: 'viewDetails',
@@ -479,6 +488,7 @@ export default function WithDraw() {
 			id: traxn.id,
 			userName: traxn.userFirstName && traxn.userLastName ? traxn.userFirstName + ' ' + traxn.userLastName : '---',
 			withdrawAmount: Math.abs(traxn.amount),
+			phone: traxn.userPhone,
 			withdrawStatus: traxn.fiatTransactionStatus,
 			bankAccNo: traxn.userBankAccount,
 			email: traxn.userEmail,
@@ -593,7 +603,6 @@ export default function WithDraw() {
 			date: new Date(traxn.createdAt).toLocaleDateString(),
 			time: new Date(traxn.createdAt).toLocaleTimeString(),
 			withdrawlAmount: Math.abs(traxn.amount),
-			withdrawlStatus: traxn.fiatTransactionStatus,
 			RefID: traxn.txnRefID,
 		}));
 		setFiatTraxnHistoryRows(rows);
@@ -677,9 +686,10 @@ export default function WithDraw() {
 							border: (theme) => `1px solid ${theme.palette.divider}`,
 							flexWrap: 'wrap',
 							width: 'fit-content',
+							marginBottom: '10px',
 						}}
 					>
-						<StyledToggleButtonGroup size="small" value={template} exclusive onChange={handleAlignment}>
+						<StyledToggleButtonGroup color="info" size="small" value={template} exclusive onChange={handleAlignment}>
 							<ToggleButton value="">
 								<Typography variant="h4">Default</Typography>
 							</ToggleButton>
@@ -708,7 +718,11 @@ export default function WithDraw() {
 								'&.MuiDataGrid-root .MuiDataGrid-cell:focus-within': {
 									outline: 'none !important',
 								},
-								backgroundColor: '#fff',
+								backgroundColor: '#FFF',
+								fontSize: '15px',
+								borderRadius: '20px',
+								padding: '10px',
+								boxShadow: 5,
 							}}
 							rows={fiatTraxns}
 							columns={withdrawColumns}
@@ -738,7 +752,11 @@ export default function WithDraw() {
 									'&.MuiDataGrid-root .MuiDataGrid-cell:focus-within': {
 										outline: 'none !important',
 									},
-									backgroundColor: '#fff',
+									backgroundColor: '#FFF',
+									fontSize: '15px',
+									borderRadius: '20px',
+									padding: '10px',
+									boxShadow: 5,
 								}}
 								rows={depositRows}
 								columns={depositLogs}

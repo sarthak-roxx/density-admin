@@ -195,7 +195,11 @@ const KYClogs = () => {
 						'&.MuiDataGrid-root .MuiDataGrid-cell:focus-within': {
 							outline: 'none !important',
 						},
-						backgroundColor: '#fff',
+						backgroundColor: '#FFF',
+						fontSize: '15px',
+						borderRadius: '20px',
+						padding: '10px',
+						boxShadow: 5,
 					}}
 					rowCount={totalRows}
 					paginationMode="server"

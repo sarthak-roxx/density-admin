@@ -37,7 +37,9 @@ const ShowButton = styled(Button)(({ theme }) => ({
 	border: '2px solid',
 	borderColor: theme.palette.info.main,
 	'&:hover': {
-		border: '2px solid theme.palette.info.dark',
+		border: '2px solid',
+		borderColor: theme.palette.info.dark,
+		color: theme.palette.info.dark,
 	},
 }));
 
