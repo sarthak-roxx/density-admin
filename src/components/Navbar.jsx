@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { AppBar, Box, Toolbar, IconButton } from '@mui/material';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
@@ -12,6 +12,9 @@ import { Outlet } from 'react-router-dom';
 import { logoutApp } from '../services/Supertokens/SuperTokensHelper';
 import { useDispatch } from 'react-redux';
 import { toggleDrawer } from '../redux/layout/menu';
+import { getCurrentUserInfo } from '../redux/currentUser/currentUser.slice';
+import { useSessionContext } from 'supertokens-auth-react/recipe/session';
+import { makeGetReq } from '../utils/axiosHelper';
 
 export default function Navbar() {
 	const [anchorEl, setAnchorEl] = useState(null);
@@ -23,6 +26,21 @@ export default function Navbar() {
 		setAnchorEl(null);
 	};
 	const dispatch = useDispatch();
+
+	const { userId: adminID } = useSessionContext();
+
+	console.log('lasdfljs', adminID);
+
+	const getCurrentUser = async () => {
+		const currentUser = await makeGetReq(`/v1/admin/${adminID}`);
+		console.log('ladsfjakl', currentUser);
+		dispatch(getCurrentUserInfo(currentUser));
+	};
+
+	useEffect(() => {
+		getCurrentUser();
+	}, [getCurrentUser]);
+
 	return (
 		<>
 			<Box sx={{ flexGrow: 1 }}>

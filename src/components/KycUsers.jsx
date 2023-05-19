@@ -360,7 +360,7 @@ export default function KycUsers() {
 				console.log(action, userId, remark);
 				const { message } = await updateKYVStatus({
 					action,
-					userId,
+					userID: userId,
 					remarks: remark,
 				});
 				if (message === 'OK') {

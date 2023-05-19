@@ -73,7 +73,7 @@ export default function UserKycData() {
 				setErrorMessage(true);
 				setRemark('');
 			} else {
-				updateKYVStatus(action, userId, remark);
+				updateKYVStatus({ action, userID: userId, remarks: remark });
 				setErrorMessage(false);
 				setRemark('');
 				setShowRemarkModal(false);
@@ -165,7 +165,7 @@ export default function UserKycData() {
 									color="error"
 									variant="contained"
 									onClick={() => {
-										setUserId(getFieldData(userKycData?.documentDetail?.POAData?.id));
+										setUserId(getFieldData(userKycData?.kycId));
 										setShowRemarkModal(true);
 										setAction('FAILED');
 									}}
@@ -177,7 +177,7 @@ export default function UserKycData() {
 									color="success"
 									variant="contained"
 									onClick={() => {
-										setUserId(getFieldData(userKycData?.documentDetail?.POAData?.id));
+										setUserId(getFieldData(userKycData?.kycId));
 										setShowRemarkModal(true);
 										setAction('VERIFIED');
 									}}
