@@ -13,6 +13,7 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import dayjs from 'dayjs';
+import CopyButton from './Common/CopyButton';
 import Accordion from '@mui/material/Accordion';
 import AccordionSummary from '@mui/material/AccordionSummary';
 import AccordionDetails from '@mui/material/AccordionDetails';
@@ -289,6 +290,15 @@ export default function DepositRecords() {
 			headerName: 'Bank Account No',
 			headerClassName: 'kyc-column-header',
 			width: 150,
+			renderCell: (params) => {
+				return (
+					<Box sx={{ display: "flex", alignItems: "center", justifyItems: "center" }}>
+        		<Typography variant="Regular_14" sx={{ width: "100%", textOverflow: "ellipsis", overflow: "hidden" }}>
+						{`****${params.row?.bankAccNo?.slice(-4)}`}</Typography>
+        		<CopyButton copyText={params.row?.bankAccNo}/>
+      		</Box>
+				)
+			}
 		},
 		{
 			field: 'depositAmount',
@@ -314,7 +324,7 @@ export default function DepositRecords() {
 			field: 'viewDetails',
 			headerName: 'View Details',
 			headerClassName: 'kyc-column-header',
-			width: 200,
+			width: 150,
 			renderCell: (params) => {
 				return (
 					<>
@@ -324,7 +334,7 @@ export default function DepositRecords() {
 								await getFiatTraxnById(params.row.UserID);
 							}}
 						>
-							Transaction History
+							Trxn History
 						</ViewButton>
 					</>
 				);
