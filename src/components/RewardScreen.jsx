@@ -13,12 +13,13 @@ import {
   Select,
   MenuItem,
 } from "@mui/material";
-import React from "react";
+import React, { useCallback } from "react";
 import { DataGrid } from "@mui/x-data-grid";
 import { useEffect, useState } from "react";
-import { makeGetReq } from "../utils/axiosHelper";
-import { useDispatch } from "react-redux";
-import { fetchUsers } from "../redux/kyc/users.slice";
+import { makeGetReq, makePostReq } from "../utils/axiosHelper";
+// import { useDispatch } from "react-redux";
+import { useSessionContext } from "supertokens-auth-react/recipe/session";
+// import { fetchUsers } from "../redux/kyc/users.slice";
 
 const rewardFormStyles = {
   position: "absolute",
@@ -47,14 +48,30 @@ const confirmModalStyles = {
 };
 
 export default function RewardScreen() {
-  const dispatch = useDispatch();
+  // const dispatch = useDispatch();
+  const session= useSessionContext();
   const [email, setEmail] = useState("");
   const [go, setGo] = useState(false);
   const [confirmModal, setConfirmModal] = useState(false);
   const [rewardFormModal, setRewardFormModal] = useState(false);
-  const [rewardType, setRewardType] = useState("");
-  const handleChange = (e) => setRewardType(e.target.value);
-  const toggleGo = () => setGo(!go);
+  const [rewardHistory, serRewardHistory] = useState({history: [], total: 0});
+  const [rewardData, setRewardData] = useState({
+    type: "",
+    amount: "",
+    remarks: ""
+  });
+  const [userData, setUserData] =  useState({});
+  const getUserData = () => {
+    if(!email) return;
+    makeGetReq(`/v1/users/email?email=${email}`).then((res) => {
+      setUserData(res);
+      setGo(true);
+    }).catch(err => {
+      setGo(false);
+      console.log(err);
+    });
+  };
+
   const toggleConfirmModal = () => setConfirmModal(!confirmModal);
   const toggleRewardFormModal = () => setRewardFormModal(!rewardFormModal);
   const historyColumns = [
@@ -64,12 +81,12 @@ export default function RewardScreen() {
       headerName: "Date",
       width: 200,
     },
-    {
-      field: "time",
-      headerClassName: "kyc-column-header",
-      headerName: "Time",
-      width: 200,
-    },
+    // {
+    //   field: "time",
+    //   headerClassName: "kyc-column-header",
+    //   headerName: "Time",
+    //   width: 200,
+    // },
     {
       field: "userName",
       headerClassName: "kyc-column-header",
@@ -95,10 +112,52 @@ export default function RewardScreen() {
       width: 200,
     },
   ];
+  const [paginationModal, setPaginationModal] = useState({
+    page: 0,
+    pageSize: 5
+  });
+
+  const {page, pageSize} = paginationModal;
+
+  const getRewardHistory = useCallback(() => {
+    if(!session.userId) return;
+    makeGetReq(`/v1/admin-logs?actionType=REWARD&pageNo=${page+1}&size=${pageSize}&adminID=${session.userId}`)
+      .then(({data, total}) => {
+        console.log(data); 
+        const rewardHistoryData = data.map((item) => ({
+          id: item?.logID,
+          date: new Date(item?.createdAt).toLocaleString(),
+          userName: item?.userFirstName+" "+item?.userLastName,
+          rewardAmt: item?.action?.log?.RewardAmount,
+          comments: item?.action?.log?.Remark,
+          admin: item?.adminName
+
+        }));
+        serRewardHistory({ history: rewardHistoryData, total});
+      })
+      .catch(err => console.log(err));
+  }, [page, pageSize, session]);
 
   useEffect(() => {
-    dispatch(fetchUsers());
+    getRewardHistory();    
   }, []);
+
+  const handleGiveReward = () => {
+    console.log("hello bois");
+    const {amount, type, remarks} = rewardData;
+    if(!amount || !type || !remarks) return;
+    const body = {
+      userID: userData?.id,
+      rewardAmount: Number(amount),
+      remark: remarks
+    };
+    makePostReq("/v1/reward/admin-reward", body).then(() => {
+      setConfirmModal(false);
+      setRewardFormModal(false);
+      getRewardHistory();
+    }).catch(err => console.log(err));
+    
+  };
 
   return (
     <>
@@ -113,7 +172,7 @@ export default function RewardScreen() {
                 onChange={(e) => setEmail(e.target.value)}
               />{" "}
               <Button
-                onClick={toggleGo}
+                onClick={getUserData}
                 sx={{ height: "51px" }}
                 variant="outlined"
               >
@@ -138,14 +197,19 @@ export default function RewardScreen() {
               <Card>
                 <CardContent>
                   <Stack spacing={2}>
-                    <Box display="flex">
+                    <Box display="flex" sx={{alignItems: "center"}}>
                       <Typography variant="h4">Name:</Typography>
+                      <Typography variant="p" ml={3}>{userData?.firstName+" "+userData?.lastName}</Typography>
                     </Box>
-                    <Box display="flex">
+                    <Box display="flex" sx={{alignItems: "center"}}>
                       <Typography variant="h4">Email:</Typography>
+                      <Typography variant="p" ml={3}>{userData?.email}</Typography>
+
                     </Box>
-                    <Box display="flex">
+                    <Box display="flex" sx={{alignItems: "center"}}>
                       <Typography variant="h4">Phone:</Typography>
+                      <Typography variant="p" ml={3}>{userData?.mobileNumber}</Typography>
+
                     </Box>
                     <Box>
                       <Button variant="contained">Transaction History</Button>
@@ -174,16 +238,14 @@ export default function RewardScreen() {
               },
               border: 2,
             }}
-            rows={[]}
+            rows={rewardHistory?.history}
             columns={historyColumns}
-            initialState={{
-              pagination: {
-                paginationModel: {
-                  pageSize: 10,
-                },
-              },
+            rowCount={rewardHistory?.total}
+            paginationMode="server"
+            paginationModel={paginationModal}
+            onPaginationModelChange={(event) => {
+              setPaginationModal({ page: event.page, pageSize: event.pageSize });
             }}
-            pageSizeOptions={[10]}
             checkboxSelection
             disableRowSelectionOnClick
           />
@@ -201,17 +263,16 @@ export default function RewardScreen() {
                 <Select
                   labelId="demo-simple-select-label"
                   id="demo-simple-select"
-                  value={rewardType}
+                  value={rewardData.type}
                   label="Select the reward type"
-                  onChange={handleChange}
+                  onChange={(e) => setRewardData({...rewardData, type: e.target.value}) }
                 >
                   <MenuItem value={"Special"}>Special</MenuItem>
-                  <MenuItem value={"BETA"}>BETA</MenuItem>
                 </Select>
               </FormControl>
             </Box>
-            <TextField label="Enter the reward amount" />
-            <TextField label="Enter the comments" />
+            <TextField label="Enter the reward amount" onChange={(e) => setRewardData({...rewardData, amount: e.target.value}) } />
+            <TextField label="Enter the comments" onChange={(e) => setRewardData({...rewardData, remarks: e.target.value}) } />
             <Box display="flex" justifyContent="center">
               <Button onClick={toggleConfirmModal} variant="contained">
                 Confirm
@@ -228,12 +289,12 @@ export default function RewardScreen() {
           </Box>
           <Box display="flex" justifyContent="space-between">
             <Box width="40%">
-              <Button fullWidth variant="contained" color="error">
+              <Button fullWidth variant="contained" color="error" onClick={() => setConfirmModal(false)}>
                 No
               </Button>
             </Box>
             <Box width="40%">
-              <Button fullWidth variant="contained" color="success">
+              <Button fullWidth variant="contained" color="success" onClick={handleGiveReward}>
                 Yes
               </Button>
             </Box>
