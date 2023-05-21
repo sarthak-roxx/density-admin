@@ -12,11 +12,10 @@ export default defineConfig({
   server: {
     host: "localhost",
     port: 3000,
-    https: false,
-    // https: {
-    //   key: fs.readFileSync("./localhost-key.pem"),
-    //   cert: fs.readFileSync("./localhost.pem"),
-    // }
+    https: {
+      key: fs.readFileSync("./localhost-key.pem"),
+      cert: fs.readFileSync("./localhost.pem"),
+    }
   },
   plugins: [react(), mkcert(), EnvironmentPlugin(["VITE_BUILD_TYPE"])],
 });
