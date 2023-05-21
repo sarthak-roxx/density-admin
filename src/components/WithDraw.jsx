@@ -479,6 +479,7 @@ export default function WithDraw() {
 	};
 
 	const fetchUserRole = useCallback(async () => {
+		if(!adminID) return;
 		const role = await makeGetReq(`v1/admin/${adminID}`);
 		console.log('helllllasfd', role.IsSuperAdmin);
 	});
@@ -578,6 +579,7 @@ export default function WithDraw() {
 	}, [mobileLogPaginationModal.page, mobileLogPaginationModal.pageSize]);
 
 	const getFiatTraxnByIdMobile = useCallback(async () => {
+		if(!fiatTraxnUserID) return;
 		const { data, total, pageID, nextPageID } = await makeGetReq(
 			`v1/fiat/query-fiat-transaction?userID=${fiatTraxnUserID}&type=INR_WITHDRAWAL&size=${
 				mobileFiatTraxnByIdModal.pageSize
@@ -600,6 +602,7 @@ export default function WithDraw() {
 	}, [mobileFiatTraxnByIdModal.page, mobileFiatTraxnByIdModal.pageSize, fiatTraxnUserID]);
 
 	const getFiatTraxnById = async (userId) => {
+		if(!userId) return;
 		const { data } = await makeGetReq(`v1/fiat/query-fiat-transaction?userID=${userId}&type=INR_WITHDRAWAL`);
 		const rows = data.map((traxn) => ({
 			id: traxn.id,

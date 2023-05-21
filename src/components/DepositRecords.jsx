@@ -4,8 +4,8 @@ import { Box, Button, IconButton, Modal, TextField, Typography, useMediaQuery } 
 import { DataGrid } from '@mui/x-data-grid';
 import { styled } from '@mui/material/styles';
 // import axiosInstance from "../utils/axiosHelper";
-import { useDispatch } from 'react-redux';
-import { fetchUsers } from '../redux/kyc/users.slice';
+// import { useDispatch } from 'react-redux';
+// import { fetchUsers } from '../redux/kyc/users.slice';
 import { makeGetReq, makePatchReq, makePostReq } from '../utils/axiosHelper';
 import { useSessionContext } from 'supertokens-auth-react/recipe/session';
 import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
@@ -553,6 +553,8 @@ export default function DepositRecords() {
 	}, [mobileLogPaginationModal.page, mobileLogPaginationModal.pageSize]);
 
 	const getFiatTraxnById = async (userId) => {
+		if(!userId) return;
+
 		const { data } = await makeGetReq(`v1/fiat/query-fiat-transaction?userID=${userId}&type=INR_DEPOSIT`);
 		const rows = data.map((traxn) => ({
 			id: traxn.id,
@@ -568,6 +570,8 @@ export default function DepositRecords() {
 	};
 
 	const getFiatTraxnByIdMobile = useCallback(async () => {
+		if(!fiatTraxnUserID) return;
+
 		const { data, total, pageID, nextPageID } = await makeGetReq(
 			`v1/fiat/query-fiat-transaction?userID=${fiatTraxnUserID}&type=INR_DEPOSIT&size=${
 				mobileFiatTraxnByIdModal.pageSize
