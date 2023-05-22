@@ -641,7 +641,8 @@ export default function WithDraw() {
 			date: new Date(traxn.createdAt).toLocaleDateString(),
 			time: new Date(traxn.createdAt).toLocaleTimeString(),
 			withdrawlAmount: Math.abs(traxn.amount),
-			RefID: traxn.txnRefID,
+			RefID: traxn.txnRefID ?  traxn.txnRefID :   "--",
+			withdrawlStatus: traxn?.fiatTransactionStatus
 		}));
 		setFiatTraxnHistoryRows(rows);
 	};
@@ -750,7 +751,7 @@ export default function WithDraw() {
 
 			{isMobile ? (
 				<>
-					<Box sx={{ height: 650, width: '100%' }}>
+					<Box sx={{ height: "400px", width: '100%' }}>
 						<DataGrid
 							sx={{
 								'.MuiDataGrid-columnHeaderCheckbox': {
@@ -784,7 +785,7 @@ export default function WithDraw() {
 						<Typography variant="h2">Withdraw Logs</Typography>
 					</Box>
 					<Box display="flex" justifyContent="center">
-						<Box sx={{ height: 650, width: '100%' }}>
+						<Box sx={{ height: "400px", width: '100%' }}>
 							<DataGrid
 								sx={{
 									'.MuiDataGrid-columnHeaderCheckbox': {
@@ -989,6 +990,7 @@ export default function WithDraw() {
 								'& .MuiDataGrid-cellCheckbox': {
 									display: 'none',
 								},
+								height: "400px"
 							}}
 							rows={fiatTraxnHistoryRows}
 							columns={transactionColumns}

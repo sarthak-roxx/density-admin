@@ -68,31 +68,31 @@ const KYClogs = () => {
 			headerName: 'Kyc Status',
 			width: 150,
 		},
-		{
-			field: 'view',
-			headerClassName: 'kyc-column-header',
-			headerName: 'Show KYC Data',
-			width: 150,
-			renderCell: (params) => {
-				return (
-					<>
-						<ShowButton
-							onClick={() => {
-								// console.log("params.id", params.id);
-								navigate(`/kycData/${params.id}`, {
-									state: {
-										email: params?.row?.email,
-										phone: params?.row?.phone,
-									},
-								});
-							}}
-						>
-							View
-						</ShowButton>
-					</>
-				);
-			},
-		},
+		// {
+		// 	field: 'view',
+		// 	headerClassName: 'kyc-column-header',
+		// 	headerName: 'Show KYC Data',
+		// 	width: 150,
+		// 	renderCell: (params) => {
+		// 		return (
+		// 			<>
+		// 				<ShowButton
+		// 					onClick={() => {
+		// 						// console.log("params.id", params.id);
+		// 						navigate(`/kycData/${params.id}`, {
+		// 							state: {
+		// 								email: params?.row?.email,
+		// 								phone: params?.row?.phone,
+		// 							},
+		// 						});
+		// 					}}
+		// 				>
+		// 					View
+		// 				</ShowButton>
+		// 			</>
+		// 		);
+		// 	},
+		// },
 		{
 			field: 'admin',
 			headerClassName: 'kyc-column-header',
@@ -201,6 +201,7 @@ const KYClogs = () => {
 						borderRadius: '20px',
 						padding: '10px',
 						boxShadow: 5,
+						height: "400px",
 					}}
 					rowCount={totalRows}
 					paginationMode="server"

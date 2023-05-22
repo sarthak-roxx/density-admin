@@ -674,7 +674,7 @@ export default function DepositRecords() {
 
 			{isMobile ? (
 				<>
-					<Box sx={{ height: 620, width: '100%', p: 1 }}>
+					<Box sx={{ height: "420px", width: '100%', p: 1 }}>
 						<DataGrid
 							sx={{
 								'.MuiDataGrid-columnHeaderCheckbox': {
@@ -708,7 +708,7 @@ export default function DepositRecords() {
 						<Typography variant="h2">Deposit Logs</Typography>
 					</Box>
 					<Box display="flex" justifyContent="center">
-						<Box sx={{ height: 650, width: '100%', p: 1 }}>
+						<Box sx={{ height: "420px", width: '100%', p: 1 }}>
 							<DataGrid
 								sx={{
 									'.MuiDataGrid-columnHeaderCheckbox': {

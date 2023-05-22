@@ -391,7 +391,7 @@ export default function KycUsers() {
 		<Box sx={{ backgroundColor: '#EFF6FF' }}>
 			{isMobile ? (
 				<Box>
-					<Box sx={{ p: 2, height: 500, width: '100%' }}>
+					<Box sx={{ p: 2,height: "400px", width: '100%' }}>
 						<DataGrid
 							rows={[...userRows]}
 							columns={usersColumns}
