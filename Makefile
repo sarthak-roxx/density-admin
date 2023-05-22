@@ -1,9 +1,7 @@
 GIT_REF := $(shell git rev-parse --short=7 HEAD)
 VERSION ?= $(GIT_REF)
-VERSION_ADMIN ?= $(GIT_REF)
-SERVICE_NAME_ADMIN := $(SERVICE_NAME)_admin
 DOCKER_FILE_ADMIN := "Dockerfile"
-ADMIN_REGISTRY := 083947760274.dkr.ecr.ap-south-1.amazonaws.com/density-admin
+ADMIN_REGISTRY := 083947760274.dkr.ecr.ap-south-1.amazonaws.com/admin-frontend
 ADMIN_IMAGE := $(ADMIN_REGISTRY):$(VERSION)
 LATEST :=latest
 LATEST_IMAGE := $(ADMIN_REGISTRY):$(LATEST)
